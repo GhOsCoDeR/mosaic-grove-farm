@@ -1,8 +1,7 @@
-
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Users, Earth, Leaf, HandShake } from 'lucide-react';
+import { Users, Earth, Leaf, Handshake } from 'lucide-react';
 
 const Impact = () => {
   return (
@@ -52,7 +51,7 @@ const Impact = () => {
             
             <div className="bg-mosaic-earth-light p-8 rounded-lg text-center">
               <div className="bg-mosaic-green rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <HandShake className="h-8 w-8 text-white" />
+                <Handshake className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-xl font-serif font-bold mb-2">Community Development</h3>
               <p>

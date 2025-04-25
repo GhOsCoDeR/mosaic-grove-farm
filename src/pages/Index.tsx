@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { ArrowRight, Leaf, Users, HandShake } from 'lucide-react';
+import { ArrowRight, Leaf, Users, Handshake } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -57,7 +56,7 @@ const Index = () => {
             
             <div className="bg-mosaic-earth-light p-6 rounded-lg text-center">
               <div className="bg-mosaic-green rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <HandShake className="h-8 w-8 text-white" />
+                <Handshake className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-xl font-serif font-bold mb-2">Economic Growth</h3>
               <p>Reinvesting profits into local communities and developing innovative agricultural products.</p>
