@@ -1,13 +1,22 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, ShoppingCart } from 'lucide-react';
+import { useCart } from '../hooks/useCart';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+  const { cartItems } = useCart();
+  
+  const totalCartItems = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
 
   return (
@@ -19,71 +28,155 @@ const Navbar = () => {
           </Link>
 
           {/* Mobile menu button */}
-          <button 
-            onClick={toggleMenu} 
-            className="md:hidden text-mosaic-green hover:text-mosaic-green-dark"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden flex items-center space-x-4">
+            <Link to="/cart" className="relative">
+              <ShoppingCart size={24} className="text-mosaic-green hover:text-mosaic-green-dark transition-colors duration-300" />
+              {totalCartItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-mosaic-green text-white text-xs w-5 h-5 flex items-center justify-center rounded-full animate-bounce">
+                  {totalCartItems}
+                </span>
+              )}
+            </Link>
+            <button 
+              onClick={toggleMenu} 
+              className="text-mosaic-green hover:text-mosaic-green-dark"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-mosaic-green-dark hover:text-mosaic-green font-medium">
+            <Link 
+              to="/" 
+              className={`font-medium transition-all duration-300 hover:text-mosaic-green ${
+                isActive('/') 
+                  ? 'text-mosaic-green border-b-2 border-mosaic-green' 
+                  : 'text-mosaic-green-dark'
+              }`}
+            >
               Home
             </Link>
-            <Link to="/about" className="text-mosaic-green-dark hover:text-mosaic-green font-medium">
+            <Link 
+              to="/about" 
+              className={`font-medium transition-all duration-300 hover:text-mosaic-green ${
+                isActive('/about') 
+                  ? 'text-mosaic-green border-b-2 border-mosaic-green' 
+                  : 'text-mosaic-green-dark'
+              }`}
+            >
               About Us
             </Link>
-            <Link to="/products" className="text-mosaic-green-dark hover:text-mosaic-green font-medium">
+            <Link 
+              to="/products" 
+              className={`font-medium transition-all duration-300 hover:text-mosaic-green ${
+                isActive('/products') 
+                  ? 'text-mosaic-green border-b-2 border-mosaic-green' 
+                  : 'text-mosaic-green-dark'
+              }`}
+            >
               Products
             </Link>
-            <Link to="/impact" className="text-mosaic-green-dark hover:text-mosaic-green font-medium">
+            <Link 
+              to="/impact" 
+              className={`font-medium transition-all duration-300 hover:text-mosaic-green ${
+                isActive('/impact') 
+                  ? 'text-mosaic-green border-b-2 border-mosaic-green' 
+                  : 'text-mosaic-green-dark'
+              }`}
+            >
               Community Impact
             </Link>
-            <Link to="/contact" className="text-mosaic-green-dark hover:text-mosaic-green font-medium">
+            <Link 
+              to="/contact" 
+              className={`font-medium transition-all duration-300 hover:text-mosaic-green ${
+                isActive('/contact') 
+                  ? 'text-mosaic-green border-b-2 border-mosaic-green' 
+                  : 'text-mosaic-green-dark'
+              }`}
+            >
               Contact
+            </Link>
+            <Link to="/cart" className="relative">
+              <ShoppingCart size={24} className="text-mosaic-green hover:text-mosaic-green-dark transition-colors duration-300" />
+              {totalCartItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-mosaic-green text-white text-xs w-5 h-5 flex items-center justify-center rounded-full animate-bounce">
+                  {totalCartItems}
+                </span>
+              )}
             </Link>
           </div>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden pt-4 pb-2">
+          <div className="md:hidden pt-4 pb-2 animate-slide-in-right">
             <div className="flex flex-col space-y-4">
               <Link 
                 to="/" 
-                className="text-mosaic-green-dark hover:text-mosaic-green font-medium"
+                className={`font-medium ${
+                  isActive('/') 
+                    ? 'text-mosaic-green' 
+                    : 'text-mosaic-green-dark'
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
               </Link>
               <Link 
                 to="/about" 
-                className="text-mosaic-green-dark hover:text-mosaic-green font-medium"
+                className={`font-medium ${
+                  isActive('/about') 
+                    ? 'text-mosaic-green' 
+                    : 'text-mosaic-green-dark'
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 About Us
               </Link>
               <Link 
                 to="/products" 
-                className="text-mosaic-green-dark hover:text-mosaic-green font-medium"
+                className={`font-medium ${
+                  isActive('/products') 
+                    ? 'text-mosaic-green' 
+                    : 'text-mosaic-green-dark'
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Products
               </Link>
               <Link 
                 to="/impact" 
-                className="text-mosaic-green-dark hover:text-mosaic-green font-medium"
+                className={`font-medium ${
+                  isActive('/impact') 
+                    ? 'text-mosaic-green' 
+                    : 'text-mosaic-green-dark'
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Community Impact
               </Link>
               <Link 
                 to="/contact" 
-                className="text-mosaic-green-dark hover:text-mosaic-green font-medium"
+                className={`font-medium ${
+                  isActive('/contact') 
+                    ? 'text-mosaic-green' 
+                    : 'text-mosaic-green-dark'
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contact
+              </Link>
+              <Link 
+                to="/cart" 
+                className={`font-medium ${
+                  isActive('/cart') 
+                    ? 'text-mosaic-green' 
+                    : 'text-mosaic-green-dark'
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Cart
               </Link>
             </div>
           </div>

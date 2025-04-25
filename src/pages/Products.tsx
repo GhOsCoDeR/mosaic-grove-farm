@@ -1,32 +1,147 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Leaf, Star } from 'lucide-react';
+import { Leaf, Star, Plus, ShoppingCart } from 'lucide-react';
+import { useCart } from '../hooks/useCart';
+import { Product as ProductType } from '../contexts/CartContext';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+
+const products: ProductType[] = [
+  {
+    id: 1,
+    name: "Organic Cashews",
+    description: "Ethically grown and harvested cashews from our farms in the Eastern Afram Plains.",
+    price: 12.99,
+    image: "https://images.unsplash.com/photo-1563412580953-7f9e99209336?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzaGV3c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60",
+    category: "Nuts"
+  },
+  {
+    id: 2,
+    name: "Tiger Nut Flour",
+    description: "Our signature product, perfect for gluten-free baking and adding nutritional value to smoothies and recipes.",
+    price: 9.99,
+    image: "https://images.unsplash.com/photo-1614961233913-a5113a4a34ed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmxvdXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
+    category: "Flour"
+  },
+  {
+    id: 3,
+    name: "Tiger Nut Milk",
+    description: "Creamy plant-based milk alternative rich in nutrients and natural sweetness.",
+    price: 6.99,
+    image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGxhbnQlMjBtaWxrfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
+    category: "Beverages"
+  },
+  {
+    id: 4,
+    name: "Tiger Nut Dessert",
+    description: "Frozen treats featuring the unique flavor and nutrition of tiger nuts.",
+    price: 8.99,
+    image: "https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGljZSUyMGNyZWFtfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
+    category: "Dessert"
+  }
+];
 
 const Products = () => {
+  const { addToCart } = useCart();
+  const { toast } = useToast();
+  const [visibleItems, setVisibleItems] = useState<number[]>([]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = parseInt(entry.target.id.split('-')[1]);
+            setVisibleItems(prev => [...prev, id]);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    document.querySelectorAll('.product-item').forEach(item => {
+      observer.observe(item);
+    });
+
+    return () => {
+      document.querySelectorAll('.product-item').forEach(item => {
+        observer.unobserve(item);
+      });
+    };
+  }, []);
+
+  const handleAddToCart = (product: ProductType) => {
+    addToCart(product);
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
+
+  const isVisible = (id: number) => visibleItems.includes(id);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="bg-mosaic-green-dark text-white py-20 px-4">
-        <div className="container mx-auto text-center max-w-3xl">
+      <section className="bg-mosaic-green-dark text-white py-20 px-4 overflow-hidden relative">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506744038136-46273834b3fb')] bg-cover opacity-20 scale-110 animate-scale-in"></div>
+        <div className="container mx-auto text-center max-w-3xl relative z-10 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
             Our Products
           </h1>
-          <p className="text-xl">
+          <p className="text-xl animate-fade-in" style={{ animationDelay: "0.2s" }}>
             Discover our range of sustainable, organic products grown with care in Ghana
           </p>
         </div>
       </section>
       
-      {/* Product Categories */}
       <section className="py-16 px-4 bg-white">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="section-heading text-center mb-12">Nutri-Rich Harvests</h2>
+          <h2 className="section-heading text-center mb-12 animate-fade-in">Nutri-Rich Harvests</h2>
           
-          {/* Cashew Products */}
+          <div className="mb-16">
+            <h3 className="text-2xl font-serif font-bold text-mosaic-green-dark mb-8 text-center animate-fade-in">
+              Featured Products
+            </h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              {products.map((product, index) => (
+                <div 
+                  id={`product-${product.id}`}
+                  key={product.id} 
+                  className={`product-item bg-white rounded-lg border border-mosaic-earth overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 ${
+                    isVisible(product.id) ? 'animate-scale-in opacity-100' : 'opacity-0'
+                  }`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="h-48 overflow-hidden">
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-serif font-bold text-mosaic-green-dark">{product.name}</h4>
+                      <span className="text-mosaic-green font-bold">${product.price.toFixed(2)}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{product.description}</p>
+                    <Button
+                      onClick={() => handleAddToCart(product)}
+                      className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
+                    >
+                      <ShoppingCart size={18} />
+                      Add to Cart
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
           <div className="mb-20">
             <div className="flex items-center mb-6">
               <div className="bg-mosaic-green h-1 flex-grow"></div>
@@ -35,13 +150,14 @@ const Products = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-              <div className="bg-gray-200 h-80 rounded-lg">
-                {/* Placeholder for cashew image */}
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
-                  Cashew Image
-                </div>
+              <div className="bg-gray-200 h-80 rounded-lg overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1563412580953-7f9e99209336?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzaGV3c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60" 
+                  alt="Cashews" 
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                />
               </div>
-              <div>
+              <div className="animate-fade-in">
                 <p className="mb-4">
                   Our organic cashews are cultivated on our 100-acre farm in Ghana's Eastern Afram Plains, where we employ sustainable farming practices that preserve the environment while producing premium quality nuts.
                 </p>
@@ -62,11 +178,17 @@ const Products = () => {
                     <span>Sustainably Grown</span>
                   </div>
                 </div>
+                <Button
+                  onClick={() => handleAddToCart(products[0])}
+                  className="mt-6 bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center gap-2"
+                >
+                  <ShoppingCart size={18} />
+                  Add to Cart
+                </Button>
               </div>
             </div>
           </div>
           
-          {/* Tiger Nut Products */}
           <div className="mb-20">
             <div className="flex items-center mb-6">
               <div className="bg-mosaic-green h-1 flex-grow"></div>
@@ -75,13 +197,14 @@ const Products = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-              <div className="order-1 md:order-2 bg-gray-200 h-80 rounded-lg">
-                {/* Placeholder for tiger nut image */}
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
-                  Tiger Nut Image
-                </div>
+              <div className="order-1 md:order-2 bg-gray-200 h-80 rounded-lg overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1610725664285-7c57e6eeac3f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8bnV0c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60" 
+                  alt="Tiger Nuts" 
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                />
               </div>
-              <div className="order-2 md:order-1">
+              <div className="order-2 md:order-1 animate-fade-in">
                 <p className="mb-4">
                   In 2020, we launched the only tiger nut cooperative farm in Ghana's eastern Kwahu region. Tiger nuts are not actually nuts, but nutrient-rich tubers with numerous health benefits.
                 </p>
@@ -108,53 +231,75 @@ const Products = () => {
               </div>
             </div>
             
-            {/* Tiger Nut Products Grid */}
             <div className="mt-12">
               <h4 className="text-xl font-serif font-semibold text-mosaic-green mb-6">Tiger Nut Product Range</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-mosaic-earth-light rounded-lg p-6">
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4">
-                    {/* Placeholder for tiger nut flour image */}
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">
-                      Tiger Nut Flour Image
-                    </div>
+                <div className="bg-mosaic-earth-light rounded-lg p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in">
+                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1614961233913-a5113a4a34ed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmxvdXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60" 
+                      alt="Tiger Nut Flour" 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
                   <h5 className="font-serif font-bold text-mosaic-green-dark mb-2">Organic Tiger Nut Flour</h5>
-                  <p className="text-sm">
+                  <p className="text-sm mb-4">
                     Our signature product, perfect for gluten-free baking and adding nutritional value to smoothies and recipes.
                   </p>
+                  <Button
+                    onClick={() => handleAddToCart(products[1])}
+                    className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
+                  >
+                    <ShoppingCart size={18} />
+                    Add to Cart
+                  </Button>
                 </div>
                 
-                <div className="bg-mosaic-earth-light rounded-lg p-6">
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4">
-                    {/* Placeholder for tiger nut milk image */}
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">
-                      Tiger Nut Milk Image (Coming Soon)
-                    </div>
+                <div className="bg-mosaic-earth-light rounded-lg p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGxhbnQlMjBtaWxrfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60" 
+                      alt="Tiger Nut Milk" 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
                   <h5 className="font-serif font-bold text-mosaic-green-dark mb-2">Tiger Nut Milk <span className="text-mosaic-green text-xs ml-1">(Coming Soon)</span></h5>
-                  <p className="text-sm">
+                  <p className="text-sm mb-4">
                     Creamy plant-based milk alternative rich in nutrients and natural sweetness.
                   </p>
+                  <Button
+                    onClick={() => handleAddToCart(products[2])}
+                    className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
+                  >
+                    <ShoppingCart size={18} />
+                    Add to Cart
+                  </Button>
                 </div>
                 
-                <div className="bg-mosaic-earth-light rounded-lg p-6">
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4">
-                    {/* Placeholder for tiger nut dessert image */}
-                    <div className="w-full h-full flex items-center justify-center text-gray-500">
-                      Tiger Nut Desserts Image (Coming Soon)
-                    </div>
+                <div className="bg-mosaic-earth-light rounded-lg p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGljZSUyMGNyZWFtfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60" 
+                      alt="Tiger Nut Desserts" 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    />
                   </div>
                   <h5 className="font-serif font-bold text-mosaic-green-dark mb-2">Tiger Nut Desserts <span className="text-mosaic-green text-xs ml-1">(Coming Soon)</span></h5>
-                  <p className="text-sm">
+                  <p className="text-sm mb-4">
                     Frozen treats and baked delights featuring the unique flavor and nutrition of tiger nuts.
                   </p>
+                  <Button
+                    onClick={() => handleAddToCart(products[3])}
+                    className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
+                  >
+                    <ShoppingCart size={18} />
+                    Add to Cart
+                  </Button>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* New Crops Section */}
           <div>
             <div className="flex items-center mb-6">
               <div className="bg-mosaic-green h-1 flex-grow"></div>
@@ -163,12 +308,13 @@ const Products = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white border border-mosaic-earth rounded-lg overflow-hidden shadow-sm">
-                <div className="bg-gray-200 h-48">
-                  {/* Placeholder for dragon fruit image */}
-                  <div className="w-full h-full flex items-center justify-center text-gray-500">
-                    Dragon Fruit Image
-                  </div>
+              <div className="bg-white border border-mosaic-earth rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 animate-fade-in">
+                <div className="bg-gray-200 h-48 overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1626683392018-9578a053b5e3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZHJhZ29uJTIwZnJ1aXR8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60" 
+                    alt="Dragon Fruit" 
+                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                  />
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-serif font-bold text-mosaic-green-dark mb-2">Dragon Fruits</h3>
@@ -178,12 +324,13 @@ const Products = () => {
                 </div>
               </div>
               
-              <div className="bg-white border border-mosaic-earth rounded-lg overflow-hidden shadow-sm">
-                <div className="bg-gray-200 h-48">
-                  {/* Placeholder for Wambugu apple image */}
-                  <div className="w-full h-full flex items-center justify-center text-gray-500">
-                    Wambugu Apple Image
-                  </div>
+              <div className="bg-white border border-mosaic-earth rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+                <div className="bg-gray-200 h-48 overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YXBwbGVzfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60" 
+                    alt="Wambugu Apple" 
+                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                  />
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-serif font-bold text-mosaic-green-dark mb-2">Wambugu Apples</h3>
@@ -197,16 +344,16 @@ const Products = () => {
         </div>
       </section>
       
-      {/* Product Benefits */}
-      <section className="py-16 px-4 bg-mosaic-earth-light">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="section-heading">Health & Environmental Benefits</h2>
-          <p className="mb-12">
+      <section className="py-16 px-4 bg-mosaic-earth-light relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518495973542-4542c06a5843')] bg-cover opacity-10"></div>
+        <div className="container mx-auto max-w-4xl text-center relative z-10">
+          <h2 className="section-heading animate-fade-in">Health & Environmental Benefits</h2>
+          <p className="mb-12 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             Our commitment to organic farming practices results in products that are not only healthier for consumers but also better for our planet and communities.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <div className="bg-mosaic-green rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
                 <Leaf className="h-6 w-6 text-white" />
               </div>
@@ -216,7 +363,7 @@ const Products = () => {
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.3s" }}>
               <div className="bg-mosaic-green rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
                 <Leaf className="h-6 w-6 text-white" />
               </div>
@@ -226,7 +373,7 @@ const Products = () => {
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.4s" }}>
               <div className="bg-mosaic-green rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
                 <Leaf className="h-6 w-6 text-white" />
               </div>
@@ -236,7 +383,7 @@ const Products = () => {
               </p>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.5s" }}>
               <div className="bg-mosaic-green rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
                 <Leaf className="h-6 w-6 text-white" />
               </div>
@@ -249,16 +396,16 @@ const Products = () => {
         </div>
       </section>
       
-      {/* CTA Section */}
-      <section className="py-16 px-4 bg-mosaic-green text-white">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">
+      <section className="py-16 px-4 bg-mosaic-green text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-mosaic-green-dark to-mosaic-green opacity-50"></div>
+        <div className="container mx-auto max-w-4xl text-center relative z-10">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4 animate-fade-in">
             Interested in Our Products?
           </h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-lg mb-8 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: "0.1s" }}>
             Reach out to learn more about wholesale opportunities, distribution partnerships, or inquire about our current availability.
           </p>
-          <a href="/contact" className="inline-block bg-white text-mosaic-green-dark px-6 py-3 rounded-md hover:bg-mosaic-earth hover:text-mosaic-green-dark transition-colors duration-300">
+          <a href="/contact" className="inline-block bg-white text-mosaic-green-dark px-6 py-3 rounded-md hover:bg-mosaic-earth hover:text-mosaic-green-dark transition-colors duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
             Contact Us
           </a>
         </div>
