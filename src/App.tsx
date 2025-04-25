@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,11 +33,11 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <AdminAuthProvider>
-          <CartProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+        <CartProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AdminAuthProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/about" element={<About />} />
@@ -62,9 +61,9 @@ const App = () => (
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </CartProvider>
-        </AdminAuthProvider>
+            </AdminAuthProvider>
+          </BrowserRouter>
+        </CartProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
