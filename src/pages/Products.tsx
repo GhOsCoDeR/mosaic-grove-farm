@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Leaf, Star, Plus, ShoppingCart } from 'lucide-react';
+import { Leaf, Star, Plus, ShoppingCart, Heart, Eye } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 import { Product as ProductType } from '../contexts/CartContext';
 import { Button } from '@/components/ui/button';
@@ -14,7 +16,17 @@ const products: ProductType[] = [
     description: "Ethically grown and harvested cashews from our farms in the Eastern Afram Plains.",
     price: 12.99,
     image: "https://images.unsplash.com/photo-1563412580953-7f9e99209336?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzaGV3c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60",
-    category: "Nuts"
+    category: "Nuts",
+    variations: [
+      {
+        name: "Type",
+        options: ["Raw", "Roasted", "Salted"]
+      }
+    ],
+    weight: {
+      options: [250, 500, 1000],
+      unit: "g"
+    }
   },
   {
     id: 2,
@@ -22,7 +34,17 @@ const products: ProductType[] = [
     description: "Our signature product, perfect for gluten-free baking and adding nutritional value to smoothies and recipes.",
     price: 9.99,
     image: "https://images.unsplash.com/photo-1614961233913-a5113a4a34ed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmxvdXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    category: "Flour"
+    category: "Flour",
+    variations: [
+      {
+        name: "Processing",
+        options: ["Fine Ground", "Coarse Ground"]
+      }
+    ],
+    weight: {
+      options: [500, 1000, 2000],
+      unit: "g"
+    }
   },
   {
     id: 3,
@@ -30,7 +52,17 @@ const products: ProductType[] = [
     description: "Creamy plant-based milk alternative rich in nutrients and natural sweetness.",
     price: 6.99,
     image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGxhbnQlMjBtaWxrfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
-    category: "Beverages"
+    category: "Beverages",
+    variations: [
+      {
+        name: "Flavor",
+        options: ["Original", "Vanilla", "Chocolate"]
+      }
+    ],
+    weight: {
+      options: [500, 1000],
+      unit: "ml"
+    }
   },
   {
     id: 4,
@@ -38,12 +70,23 @@ const products: ProductType[] = [
     description: "Frozen treats featuring the unique flavor and nutrition of tiger nuts.",
     price: 8.99,
     image: "https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGljZSUyMGNyZWFtfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
-    category: "Dessert"
+    category: "Dessert",
+    variations: [
+      {
+        name: "Flavor",
+        options: ["Classic", "Berry Mix", "Chocolate"]
+      }
+    ],
+    weight: {
+      options: [250, 500],
+      unit: "g"
+    }
   }
 ];
 
 const Products = () => {
-  const { addToCart } = useCart();
+  const { addToCart, addToWishlist, isInWishlist } = useCart();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
 
@@ -71,12 +114,26 @@ const Products = () => {
     };
   }, []);
 
-  const handleAddToCart = (product: ProductType) => {
+  const handleAddToCart = (product: ProductType, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     addToCart(product);
     toast({
       title: "Added to Cart",
       description: `${product.name} has been added to your cart.`,
     });
+  };
+  
+  const handleAddToWishlist = (product: ProductType, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    addToWishlist(product);
+    toast({
+      title: "Added to Wishlist",
+      description: `${product.name} has been added to your wishlist.`,
+    });
+  };
+  
+  const handleViewDetails = (productId: number) => {
+    navigate(`/product/${productId}`);
   };
 
   const isVisible = (id: number) => visibleItems.includes(id);
@@ -115,13 +172,38 @@ const Products = () => {
                     isVisible(product.id) ? 'animate-scale-in opacity-100' : 'opacity-0'
                   }`}
                   style={{ animationDelay: `${index * 0.1}s` }}
+                  onClick={() => handleViewDetails(product.id)}
                 >
-                  <div className="h-48 overflow-hidden">
+                  <div className="h-48 overflow-hidden relative group">
                     <img 
                       src={product.image} 
                       alt={product.name} 
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
+                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
+                        onClick={(e) => handleViewDetails(product.id)}
+                      >
+                        <Eye size={18} />
+                      </button>
+                      <button 
+                        className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
+                        onClick={(e) => handleAddToCart(product, e)}
+                      >
+                        <ShoppingCart size={18} />
+                      </button>
+                      <button 
+                        className={`bg-white p-2 rounded-full mx-1 transition-colors ${
+                          isInWishlist(product.id)
+                            ? 'text-red-500'
+                            : 'text-mosaic-green-dark hover:bg-mosaic-green hover:text-white'
+                        }`}
+                        onClick={(e) => handleAddToWishlist(product, e)}
+                      >
+                        <Heart size={18} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
+                      </button>
+                    </div>
                   </div>
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
@@ -130,7 +212,7 @@ const Products = () => {
                     </div>
                     <p className="text-sm text-gray-600 mb-4 line-clamp-2">{product.description}</p>
                     <Button
-                      onClick={() => handleAddToCart(product)}
+                      onClick={(e) => handleAddToCart(product, e)}
                       className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
                     >
                       <ShoppingCart size={18} />
@@ -178,13 +260,23 @@ const Products = () => {
                     <span>Sustainably Grown</span>
                   </div>
                 </div>
-                <Button
-                  onClick={() => handleAddToCart(products[0])}
-                  className="mt-6 bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center gap-2"
-                >
-                  <ShoppingCart size={18} />
-                  Add to Cart
-                </Button>
+                <div className="flex gap-3 mt-6">
+                  <Button
+                    onClick={() => handleViewDetails(1)}
+                    variant="outline"
+                    className="border-mosaic-green text-mosaic-green hover:bg-mosaic-green hover:text-white transition-colors flex items-center gap-2"
+                  >
+                    <Eye size={18} />
+                    View Details
+                  </Button>
+                  <Button
+                    onClick={() => handleAddToCart(products[0])}
+                    className="bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center gap-2"
+                  >
+                    <ShoppingCart size={18} />
+                    Add to Cart
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -235,12 +327,20 @@ const Products = () => {
               <h4 className="text-xl font-serif font-semibold text-mosaic-green mb-6">Tiger Nut Product Range</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-mosaic-earth-light rounded-lg p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in">
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden">
+                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden relative group">
                     <img 
                       src="https://images.unsplash.com/photo-1614961233913-a5113a4a34ed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmxvdXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60" 
                       alt="Tiger Nut Flour" 
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
+                        onClick={() => handleViewDetails(2)}
+                      >
+                        <Eye size={18} />
+                      </button>
+                    </div>
                   </div>
                   <h5 className="font-serif font-bold text-mosaic-green-dark mb-2">Organic Tiger Nut Flour</h5>
                   <p className="text-sm mb-4">
@@ -256,12 +356,20 @@ const Products = () => {
                 </div>
                 
                 <div className="bg-mosaic-earth-light rounded-lg p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden">
+                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden relative group">
                     <img 
                       src="https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGxhbnQlMjBtaWxrfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60" 
                       alt="Tiger Nut Milk" 
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
+                        onClick={() => handleViewDetails(3)}
+                      >
+                        <Eye size={18} />
+                      </button>
+                    </div>
                   </div>
                   <h5 className="font-serif font-bold text-mosaic-green-dark mb-2">Tiger Nut Milk <span className="text-mosaic-green text-xs ml-1">(Coming Soon)</span></h5>
                   <p className="text-sm mb-4">
@@ -277,12 +385,20 @@ const Products = () => {
                 </div>
                 
                 <div className="bg-mosaic-earth-light rounded-lg p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden">
+                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden relative group">
                     <img 
                       src="https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGljZSUyMGNyZWFtfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60" 
                       alt="Tiger Nut Desserts" 
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
+                        onClick={() => handleViewDetails(4)}
+                      >
+                        <Eye size={18} />
+                      </button>
+                    </div>
                   </div>
                   <h5 className="font-serif font-bold text-mosaic-green-dark mb-2">Tiger Nut Desserts <span className="text-mosaic-green text-xs ml-1">(Coming Soon)</span></h5>
                   <p className="text-sm mb-4">
@@ -405,9 +521,14 @@ const Products = () => {
           <p className="text-lg mb-8 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: "0.1s" }}>
             Reach out to learn more about wholesale opportunities, distribution partnerships, or inquire about our current availability.
           </p>
-          <a href="/contact" className="inline-block bg-white text-mosaic-green-dark px-6 py-3 rounded-md hover:bg-mosaic-earth hover:text-mosaic-green-dark transition-colors duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Contact Us
-          </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link to="/wishlist" className="inline-block bg-white text-mosaic-green-dark px-6 py-3 rounded-md hover:bg-mosaic-earth hover:text-mosaic-green-dark transition-colors duration-300 animate-fade-in flex items-center gap-2" style={{ animationDelay: "0.2s" }}>
+              <Heart size={18} /> View Wishlist
+            </Link>
+            <Link to="/contact" className="inline-block bg-white text-mosaic-green-dark px-6 py-3 rounded-md hover:bg-mosaic-earth hover:text-mosaic-green-dark transition-colors duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+              Contact Us
+            </Link>
+          </div>
         </div>
       </section>
       
