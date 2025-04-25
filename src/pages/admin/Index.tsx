@@ -1,19 +1,24 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
+import AdminLayout from '../../components/AdminLayout';
 import { Package, ShoppingBag, Users, Settings } from 'lucide-react';
+import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
 const AdminIndex = () => {
+  const { admin } = useAdminAuth();
+  
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <div className="flex-1 container mx-auto py-16 px-4 max-w-5xl">
-        <h1 className="text-3xl md:text-4xl font-serif font-bold text-mosaic-green-dark mb-8 animate-fade-in">
-          Admin Dashboard
-        </h1>
+    <AdminLayout>
+      <div className="container mx-auto py-8 px-4 max-w-5xl animate-fade-in">
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-serif font-bold text-mosaic-green-dark mb-2">
+            Admin Dashboard
+          </h1>
+          <p className="text-gray-600">
+            Welcome back, <span className="font-medium">{admin?.username}</span>. Here's an overview of your store.
+          </p>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link to="/admin/inventory" className="block group">
@@ -44,7 +49,7 @@ const AdminIndex = () => {
             </div>
           </Link>
           
-          <Link to="#" className="block group">
+          <Link to="/admin/customers" className="block group">
             <div className="bg-white p-8 rounded-lg border border-mosaic-earth hover:border-mosaic-green hover:shadow-md transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <div className="flex items-center">
                 <div className="bg-mosaic-earth-light p-4 rounded-full group-hover:bg-mosaic-green transition-colors duration-300">
@@ -58,7 +63,7 @@ const AdminIndex = () => {
             </div>
           </Link>
           
-          <Link to="#" className="block group">
+          <Link to="/admin/settings" className="block group">
             <div className="bg-white p-8 rounded-lg border border-mosaic-earth hover:border-mosaic-green hover:shadow-md transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.3s" }}>
               <div className="flex items-center">
                 <div className="bg-mosaic-earth-light p-4 rounded-full group-hover:bg-mosaic-green transition-colors duration-300">
@@ -82,9 +87,7 @@ const AdminIndex = () => {
           </p>
         </div>
       </div>
-      
-      <Footer />
-    </div>
+    </AdminLayout>
   );
 };
 

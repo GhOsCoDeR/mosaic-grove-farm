@@ -70,14 +70,33 @@ const areVariationsSame = (var1?: Record<string, string>, var2?: Record<string, 
   return keys1.every(key => var1[key] === var2[key]);
 };
 
+// Generate a unique cart item key based on product ID, variation and weight
+const getCartItemKey = (
+  productId: number, 
+  selectedVariation?: Record<string, string>, 
+  selectedWeight?: number
+): string => {
+  const variationString = selectedVariation 
+    ? Object.entries(selectedVariation)
+        .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+        .map(([key, value]) => `${key}:${value}`)
+        .join('|')
+    : '';
+  
+  const weightString = selectedWeight ? String(selectedWeight) : '';
+  
+  return `${productId}-${variationString}-${weightString}`;
+};
+
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case 'ADD_TO_CART': {
       const { product, quantity, selectedVariation, selectedWeight } = action.payload;
-      const existingItemIndex = state.cartItems.findIndex(
-        item => item.product.id === product.id && 
-        areVariationsSame(item.selectedVariation, selectedVariation) &&
-        item.selectedWeight === selectedWeight
+      const cartKey = getCartItemKey(product.id, selectedVariation, selectedWeight);
+      
+      // Check if this exact product + variation + weight combination exists
+      const existingItemIndex = state.cartItems.findIndex(item => 
+        getCartItemKey(item.product.id, item.selectedVariation, item.selectedWeight) === cartKey
       );
 
       if (existingItemIndex > -1) {
@@ -94,27 +113,28 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         };
       }
     }
+    
     case 'REMOVE_FROM_CART': {
       const { id, selectedVariation, selectedWeight } = action.payload;
+      const cartKey = getCartItemKey(id, selectedVariation, selectedWeight);
+      
       return {
         ...state,
-        cartItems: state.cartItems.filter(
-          item => !(item.product.id === id && 
-                  areVariationsSame(item.selectedVariation, selectedVariation) && 
-                  item.selectedWeight === selectedWeight)
+        cartItems: state.cartItems.filter(item => 
+          getCartItemKey(item.product.id, item.selectedVariation, item.selectedWeight) !== cartKey
         ),
       };
     }
+    
     case 'UPDATE_QUANTITY': {
       const { id, quantity, selectedVariation, selectedWeight } = action.payload;
+      const cartKey = getCartItemKey(id, selectedVariation, selectedWeight);
       
       if (quantity <= 0) {
         return {
           ...state,
-          cartItems: state.cartItems.filter(
-            item => !(item.product.id === id && 
-                    areVariationsSame(item.selectedVariation, selectedVariation) && 
-                    item.selectedWeight === selectedWeight)
+          cartItems: state.cartItems.filter(item => 
+            getCartItemKey(item.product.i, item.selectedVariation, item.selectedWeight) !== cartKey
           ),
         };
       }
@@ -122,16 +142,16 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return {
         ...state,
         cartItems: state.cartItems.map(item =>
-          (item.product.id === id && 
-           areVariationsSame(item.selectedVariation, selectedVariation) && 
-           item.selectedWeight === selectedWeight) 
+          getCartItemKey(item.product.id, item.selectedVariation, item.selectedWeight) === cartKey
             ? { ...item, quantity } 
             : item
         ),
       };
     }
+    
     case 'CLEAR_CART':
       return { ...state, cartItems: [] };
+    
     case 'ADD_TO_WISHLIST': {
       const isAlreadyInWishlist = state.wishlistItems.some(item => item.id === action.payload.id);
       if (isAlreadyInWishlist) {
@@ -142,11 +162,13 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         wishlistItems: [...state.wishlistItems, action.payload],
       };
     }
+    
     case 'REMOVE_FROM_WISHLIST':
       return {
         ...state,
         wishlistItems: state.wishlistItems.filter(item => item.id !== action.payload),
       };
+    
     default:
       return state;
   }

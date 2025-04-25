@@ -21,6 +21,11 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    // Close mobile menu when route changes
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -32,6 +37,10 @@ const Navbar: React.FC = () => {
     if (path === '/' && location.pathname !== '/') return false;
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
+
+  // Check if path is admin route to hide navbar
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  if (isAdminRoute) return null;
 
   return (
     <header 
