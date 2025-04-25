@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCart } from '../hooks/useCart';
@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { cartItems, removeFromCart, updateQuantity } = useCart();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const subtotal = cartItems.reduce(
     (total, item) => total + item.product.price * item.quantity,
@@ -18,11 +19,16 @@ const Cart = () => {
   );
 
   const handleCheckout = () => {
-    toast({
-      title: "Order Placed",
-      description: "Thank you for your order! We'll contact you soon to confirm the details.",
-    });
-    clearCart();
+    if (cartItems.length === 0) {
+      toast({
+        title: "Cart is empty",
+        description: "Please add some products to your cart before proceeding to checkout.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    navigate('/checkout');
   };
 
   if (cartItems.length === 0) {
@@ -61,7 +67,7 @@ const Cart = () => {
 
           {cartItems.map((item, index) => (
             <div 
-              key={item.product.id} 
+              key={`${item.product.id}-${JSON.stringify(item.selectedVariation)}-${item.selectedWeight}`} 
               className="p-6 border-b hover:bg-mosaic-earth-light/50 transition-colors duration-300 animate-fade-in" 
               style={{ animationDelay: `${index * 0.1}s` }}
             >
@@ -73,19 +79,31 @@ const Cart = () => {
                   <div>
                     <div className="font-medium text-mosaic-green-dark">{item.product.name}</div>
                     <div className="text-sm text-gray-600">{item.product.category}</div>
+                    {item.selectedVariation && Object.keys(item.selectedVariation).length > 0 && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        {Object.entries(item.selectedVariation).map(([key, value]) => (
+                          <span key={key} className="mr-2">{key}: {String(value)}</span>
+                        ))}
+                      </div>
+                    )}
+                    {item.selectedWeight && (
+                      <div className="text-xs text-gray-500">
+                        Weight: {item.selectedWeight}{item.product.weight?.unit}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="text-center">${item.product.price.toFixed(2)}</div>
                 <div className="flex items-center justify-center space-x-2">
                   <button 
-                    onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                    onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedVariation, item.selectedWeight)}
                     className="text-mosaic-green-dark hover:text-mosaic-green bg-gray-100 hover:bg-gray-200 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
                   >
                     <Minus size={16} />
                   </button>
                   <span className="w-8 text-center">{item.quantity}</span>
                   <button 
-                    onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                    onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedVariation, item.selectedWeight)}
                     className="text-mosaic-green-dark hover:text-mosaic-green bg-gray-100 hover:bg-gray-200 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
                   >
                     <Plus size={16} />
@@ -94,7 +112,7 @@ const Cart = () => {
                 <div className="flex justify-end items-center space-x-3">
                   <span>${(item.product.price * item.quantity).toFixed(2)}</span>
                   <button 
-                    onClick={() => removeFromCart(item.product.id)}
+                    onClick={() => removeFromCart(item.product.id, item.selectedVariation, item.selectedWeight)}
                     className="text-gray-500 hover:text-red-500 transition-colors"
                   >
                     <Trash size={16} />
