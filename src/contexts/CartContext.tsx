@@ -134,7 +134,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         return {
           ...state,
           cartItems: state.cartItems.filter(item => 
-            getCartItemKey(item.product.i, item.selectedVariation, item.selectedWeight) !== cartKey
+            getCartItemKey(item.product.id, item.selectedVariation, item.selectedWeight) !== cartKey
           ),
         };
       }
