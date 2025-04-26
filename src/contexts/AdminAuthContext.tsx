@@ -32,6 +32,8 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
   // Check if user has admin role
   const checkAdminRole = async (userId: string) => {
     try {
+      console.log("Checking admin role for user ID:", userId);
+      
       const { data, error } = await supabase
         .from('admin_roles')
         .select('role')
@@ -44,13 +46,38 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
       }
 
       if (data) {
+        console.log("Found admin role:", data.role);
         return data.role as AdminRole;
       }
-
+      
+      console.log("No admin role found");
       return false;
     } catch (error) {
-      console.error('Error checking admin role:', error);
+      console.error('Exception checking admin role:', error);
       return false;
+    }
+  };
+
+  const fetchAdminProfile = async (userId: string) => {
+    try {
+      console.log("Fetching admin profile for user ID:", userId);
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('name, email')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching admin profile:', error);
+        return { name: 'Admin User', email: null };
+      }
+      
+      console.log("Found admin profile:", profile);
+      return profile;
+    } catch (error) {
+      console.error('Exception fetching admin profile:', error);
+      return { name: 'Admin User', email: null };
     }
   };
 
@@ -58,49 +85,59 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        console.log("Auth state changed:", event);
+        
         if (currentSession?.user) {
+          console.log("Session found, user ID:", currentSession.user.id);
+          
           // Check if user has admin role
           const role = await checkAdminRole(currentSession.user.id);
 
           if (role) {
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('name, email')
-              .eq('id', currentSession.user.id)
-              .single();
-
+            const profile = await fetchAdminProfile(currentSession.user.id);
+            
             setAdmin({
+              id: currentSession.user.id,
+              username: profile?.name || currentSession.user.email || 'Admin User',
+              role: role
+            });
+            
+            console.log("Admin user set:", {
               id: currentSession.user.id,
               username: profile?.name || currentSession.user.email || 'Admin User',
               role: role
             });
           } else {
             setAdmin(null);
+            console.log("User is not an admin");
           }
         } else {
           setAdmin(null);
+          console.log("No session found");
         }
       }
     );
 
     // Then check for existing session
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      console.log("Checking for existing session");
+      
       if (currentSession?.user) {
+        console.log("Existing session found, user ID:", currentSession.user.id);
+        
         // Check if user has admin role
         const role = await checkAdminRole(currentSession.user.id);
 
         if (role) {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('name, email')
-            .eq('id', currentSession.user.id)
-            .single();
-
+          const profile = await fetchAdminProfile(currentSession.user.id);
+          
           setAdmin({
             id: currentSession.user.id,
             username: profile?.name || currentSession.user.email || 'Admin User',
             role: role
           });
+          
+          console.log("Admin user set from existing session");
         }
       }
       
@@ -116,6 +153,8 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
     setIsLoading(true);
     
     try {
+      console.log("Attempting login with email:", email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -127,11 +166,14 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
           description: error.message,
           variant: "destructive",
         });
+        console.error("Authentication error:", error);
         setIsLoading(false);
         return false;
       }
       
       if (data.user) {
+        console.log("Authentication successful, checking admin role");
+        
         // Check if user has admin role
         const role = await checkAdminRole(data.user.id);
         
@@ -141,16 +183,13 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
             description: "You don't have administrator privileges.",
             variant: "destructive",
           });
+          console.error("User is not an admin");
           await supabase.auth.signOut();
           setIsLoading(false);
           return false;
         }
         
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('name, email')
-          .eq('id', data.user.id)
-          .single();
+        const profile = await fetchAdminProfile(data.user.id);
         
         setAdmin({
           id: data.user.id,
@@ -162,6 +201,7 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
           title: "Login Successful",
           description: "Welcome to Mosaic Grove Admin Panel!",
         });
+        console.log("Admin login successful");
         setIsLoading(false);
         return true;
       }
@@ -174,6 +214,7 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
+      console.error("Login exception:", error);
       setIsLoading(false);
       return false;
     }

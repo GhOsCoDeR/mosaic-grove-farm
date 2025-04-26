@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
@@ -7,18 +7,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Lock, User, Eye, EyeOff } from 'lucide-react';
+import AdminLoginDebug from '@/components/admin/AdminLoginDebug';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, isAuthenticated } = useAdminAuth();
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const { login, isAuthenticated, isLoading } = useAdminAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Clear any existing error when component mounts or inputs change
+    setLoginError(null);
+  }, [email, password]);
+
   // Redirect if already logged in
-  if (isAuthenticated) {
+  if (isAuthenticated && !isLoading) {
     return <Navigate to="/admin" />;
   }
 
@@ -28,6 +35,9 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Reset error state
+    setLoginError(null);
     
     if (!email || !password) {
       toast({
@@ -41,10 +51,19 @@ const AdminLogin = () => {
     setIsSubmitting(true);
     
     try {
+      console.log("Attempting admin login:", email);
       const success = await login(email, password);
+      
       if (success) {
+        console.log("Admin login successful, navigating to admin dashboard");
         navigate('/admin');
+      } else {
+        console.log("Admin login failed");
+        setLoginError("Invalid login credentials. Please try again.");
       }
+    } catch (error) {
+      console.error("Login error:", error);
+      setLoginError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -60,6 +79,12 @@ const AdminLogin = () => {
         
         <div className="bg-white p-8 rounded-lg shadow-lg border border-mosaic-earth animate-scale-in">
           <h2 className="text-2xl font-serif font-bold text-mosaic-green-dark mb-6 text-center">Admin Login</h2>
+          
+          {loginError && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <p>{loginError}</p>
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -118,6 +143,10 @@ const AdminLogin = () => {
             <p>Demo credentials: admin@mosaicgrove.com / admin123</p>
           </div>
         </div>
+        
+        {process.env.NODE_ENV !== 'production' && (
+          <AdminLoginDebug />
+        )}
         
         <div className="mt-8 text-center">
           <a 

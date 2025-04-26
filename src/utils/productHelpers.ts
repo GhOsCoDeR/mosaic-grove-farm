@@ -79,3 +79,44 @@ export function formatPrice(price: number): string {
 export function isSameProduct(id1: string | number, id2: string | number): boolean {
   return String(id1) === String(id2);
 }
+
+/**
+ * Safely gets product ID as string
+ */
+export function getProductIdAsString(id: string | number): string {
+  return String(id);
+}
+
+/**
+ * Safely gets product ID as number
+ */
+export function getProductIdAsNumber(id: string | number): number {
+  return typeof id === 'string' ? parseInt(id, 10) : id;
+}
+
+/**
+ * Creates a placeholder product with default values
+ */
+export function createPlaceholderProduct(): Product {
+  return {
+    id: '0',
+    name: 'Product Not Found',
+    description: 'This product could not be found or has been removed.',
+    price: 0,
+    image_url: '/placeholder.svg',
+    category_id: null,
+    inventory_count: 0,
+    is_featured: false,
+    image: '/placeholder.svg',
+    category_name: 'Unknown',
+    weight: {
+      weight: 0,
+      unit: 'g'
+    },
+    weight_options: {
+      options: [0],
+      unit: 'g'
+    },
+    variation_options: []
+  };
+}

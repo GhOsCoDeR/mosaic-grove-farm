@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -13,8 +13,14 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Clear any existing error when component mounts or inputs change
+    setLoginError(null);
+  }, [email, password]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -22,16 +28,25 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(null);
     setIsSubmitting(true);
     
     try {
+      console.log("Attempting user login:", email);
       const success = await login(email, password);
       if (success) {
+        console.log("User login successful");
         // Redirect to cart if there was a previous checkout attempt
         const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/';
         sessionStorage.removeItem('redirectAfterLogin');
         navigate(redirectPath);
+      } else {
+        console.log("User login failed");
+        setLoginError("Invalid login credentials. Please try again.");
       }
+    } catch (error) {
+      console.error("Login error:", error);
+      setLoginError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -51,6 +66,12 @@ const Login = () => {
               Sign in to your account to continue
             </p>
           </div>
+          
+          {loginError && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              <p>{loginError}</p>
+            </div>
+          )}
           
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">

@@ -10,15 +10,16 @@ export const useCart = () => {
     throw new Error('useCart must be used within a CartProvider');
   }
   
-  // Add helper function to properly compare product IDs regardless of type
-  const originalContext = { ...context };
-  
   // Enhanced context with type-safe methods
   return {
-    ...originalContext,
+    ...context,
     isInCart: (productId: string | number) => 
-      originalContext.cartItems.some(item => isSameProduct(item.product.id, productId)),
+      context.cartItems.some(item => isSameProduct(item.product.id, productId)),
     isInWishlist: (productId: string | number) => 
-      originalContext.wishlistItems.some(item => isSameProduct(item.id, productId))
+      context.wishlistItems.some(item => isSameProduct(item.id, productId)),
+    getCartItem: (productId: string | number) =>
+      context.cartItems.find(item => isSameProduct(item.product.id, productId)),
+    getWishlistItem: (productId: string | number) =>
+      context.wishlistItems.find(item => isSameProduct(item.id, productId))
   };
 };

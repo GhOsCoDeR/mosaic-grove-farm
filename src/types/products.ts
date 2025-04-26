@@ -47,7 +47,7 @@ export interface Product {
   };
   image?: string; // Alias for image_url for backward compatibility
 
-  // Additional properties for legacy code compatibility
+  // Additional properties for compatibility
   category_name?: string; // Added for old code using product.category directly
   
   // Properties for mock data compatibility
@@ -59,24 +59,6 @@ export interface Product {
     name: string;
     options: string[];
   }[];
-}
-
-// Mock product type for the old code with numeric IDs
-export interface LegacyProduct {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-  variations?: {
-    name: string;
-    options: string[];
-  }[];
-  weight?: {
-    options: number[];
-    unit: string;
-  };
 }
 
 // Helper function to convert between numeric and string IDs
