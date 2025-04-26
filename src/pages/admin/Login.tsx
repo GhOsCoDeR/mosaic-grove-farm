@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { Lock, User } from 'lucide-react';
+import { Lock, User, Eye, EyeOff } from 'lucide-react';
 
 const AdminLogin = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, isAuthenticated } = useAdminAuth();
   const { toast } = useToast();
@@ -21,13 +22,17 @@ const AdminLogin = () => {
     return <Navigate to="/admin" />;
   }
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username || !password) {
+    if (!email || !password) {
       toast({
         title: "Error",
-        description: "Please enter both username and password.",
+        description: "Please enter both email and password.",
         variant: "destructive"
       });
       return;
@@ -36,7 +41,7 @@ const AdminLogin = () => {
     setIsSubmitting(true);
     
     try {
-      const success = await login(username, password);
+      const success = await login(email, password);
       if (success) {
         navigate('/admin');
       }
@@ -58,18 +63,18 @@ const AdminLogin = () => {
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-mosaic-green-dark">Username</Label>
+              <Label htmlFor="email" className="text-mosaic-green-dark">Email</Label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                   <User className="h-5 w-5 text-gray-400" />
                 </div>
                 <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
-                  placeholder="Enter your username"
+                  placeholder="Enter your email"
                 />
               </div>
             </div>
@@ -82,12 +87,21 @@ const AdminLogin = () => {
                 </div>
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 pr-10"
                   placeholder="Enter your password"
                 />
+                <div 
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer" 
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? 
+                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" /> :
+                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  }
+                </div>
               </div>
             </div>
             
@@ -101,7 +115,7 @@ const AdminLogin = () => {
           </form>
           
           <div className="mt-4 text-sm text-gray-600 text-center">
-            <p>Demo credentials: admin / admin123</p>
+            <p>Demo credentials: admin@mosaicgrove.com / admin123</p>
           </div>
         </div>
         

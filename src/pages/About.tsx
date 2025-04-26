@@ -1,186 +1,168 @@
+
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Leaf, CheckCircle } from 'lucide-react';
+import HeroSection from '../components/HeroSection';
 
 const About = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-
-      {/* Hero Section */}
-      <section className="bg-mosaic-green-dark text-white py-20 px-4 overflow-hidden relative">
-        <div className="absolute inset-0 bg-[url('/farm-hero.jpg')] bg-cover opacity-20 scale-110 animate-scale-in"></div>
-        <div className="container mx-auto text-center max-w-3xl relative z-10 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
-            About Mosaic Grove
-          </h1>
-          <p className="text-xl animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Our mission is to cultivate sustainable agriculture and empower local communities in Ghana.
-          </p>
-        </div>
-      </section>
-
+      
+      {/* Hero Section with new component */}
+      <HeroSection
+        title="About Mosaic Grove"
+        subtitle="Our mission is to cultivate sustainable agriculture and empower local communities in Ghana"
+        backgroundImage="/lovable-uploads/c22771de-87f4-4515-8f9a-0327322baa53.png"
+        overlayClass="bg-mosaic-green-dark/60"
+      />
+      
       {/* Our Story Section */}
       <section className="py-16 px-4 bg-white">
         <div className="container mx-auto max-w-5xl">
-          <h2 className="section-heading text-center mb-12 animate-fade-in">Our Story</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="animate-fade-in">
+          <h2 className="section-heading text-center mb-12">Our Story</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-12">
+            <div>
               <p className="mb-6">
-                Mosaic Grove was founded in 2018 with a vision to transform agriculture in Ghana through sustainable and ethical practices. We started with a small team of passionate individuals committed to making a positive impact on local communities.
+                Mosaic Grove was founded in 2018 with a vision to transform rural Ghanaian communities through sustainable agriculture. After leaving Ghana at 17, our founder Dr. Kaadze Wright returned with a mission to create jobs and ensure food security.
               </p>
               <p className="mb-6">
-                Today, we operate several farms and cooperatives across the country, growing organic cashews, tiger nuts, and other crops. Our commitment to sustainability extends beyond our farms to include eco-friendly packaging and responsible sourcing.
+                Starting with a 100-acre organic cashew farm in the Eastern Afram Plains, we employed women and youth from surrounding communities, providing training and fair wages.
               </p>
-              <p className="mb-6">
-                We believe that agriculture can be a force for good, creating economic opportunities, promoting environmental stewardship, and providing healthy, nutritious food for all.
+              <p>
+                In 2020, we expanded to tiger nut cultivation in the Kwahu region, adding another nutritious and environmentally sustainable crop to our portfolio.
               </p>
             </div>
-            <div className="bg-gray-200 h-96 rounded-lg overflow-hidden animate-scale-in">
-              <img
-                src="https://images.unsplash.com/photo-1562813730-a39a7102b644?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGZhcm1lcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60"
-                alt="Our Farm"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-              />
+            <div className="bg-mosaic-earth-light p-6 rounded-lg shadow-md">
+              <h3 className="text-xl font-serif font-bold text-mosaic-green-dark mb-4">Our Journey</h3>
+              <ul className="space-y-4">
+                <li className="flex">
+                  <div className="bg-mosaic-green rounded-full w-6 h-6 flex items-center justify-center text-white font-bold mr-4 flex-shrink-0 mt-1">
+                    1
+                  </div>
+                  <div>
+                    <span className="font-bold">2018:</span> Founded with 100-acre organic cashew farm in Eastern Afram Plains
+                  </div>
+                </li>
+                <li className="flex">
+                  <div className="bg-mosaic-green rounded-full w-6 h-6 flex items-center justify-center text-white font-bold mr-4 flex-shrink-0 mt-1">
+                    2
+                  </div>
+                  <div>
+                    <span className="font-bold">2020:</span> Expanded to tiger nut cultivation in Kwahu region
+                  </div>
+                </li>
+                <li className="flex">
+                  <div className="bg-mosaic-green rounded-full w-6 h-6 flex items-center justify-center text-white font-bold mr-4 flex-shrink-0 mt-1">
+                    3
+                  </div>
+                  <div>
+                    <span className="font-bold">2022:</span> Launched processing facility for value-added products
+                  </div>
+                </li>
+                <li className="flex">
+                  <div className="bg-mosaic-green rounded-full w-6 h-6 flex items-center justify-center text-white font-bold mr-4 flex-shrink-0 mt-1">
+                    4
+                  </div>
+                  <div>
+                    <span className="font-bold">2023:</span> Expanded e-commerce platform to reach global markets
+                  </div>
+                </li>
+              </ul>
             </div>
+          </div>
+          
+          <div className="bg-mosaic-earth-light/50 p-8 rounded-lg">
+            <h3 className="section-subheading mb-4">Our Vision for the Future</h3>
+            <p className="mb-4">
+              We're now pioneering innovative plant-based products while continuously supporting local farmers. Our vision extends beyond agriculture to creating lasting social impact:
+            </p>
+            <ul className="list-disc pl-5 space-y-3 mb-4">
+              <li>Expanding our farmer network to create 500+ jobs by 2025</li>
+              <li>Establishing a training academy for sustainable farming practices</li>
+              <li>Developing value-added products like plant-based milk and flour alternatives</li>
+              <li>Building a carbon-neutral processing facility powered by renewable energy</li>
+            </ul>
+            <p>
+              Through it all, we remain committed to our founding principles of sustainability, community empowerment, and ethical business practices.
+            </p>
           </div>
         </div>
       </section>
-
-      {/* Our Mission Section */}
-      <section className="py-16 px-4 bg-mosaic-earth-light relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518495973542-4542c06a5843')] bg-cover opacity-10"></div>
-        <div className="container mx-auto max-w-4xl text-center relative z-10">
-          <h2 className="section-heading animate-fade-in">Our Mission</h2>
-          <p className="mb-12 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            We are dedicated to cultivating sustainable agriculture and empowering local communities in Ghana.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-              <div className="bg-mosaic-green rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                <Leaf className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="font-serif font-bold mb-2">Sustainable Farming</h3>
-              <p className="text-sm">
-                We employ farming practices that preserve soil health and protect local ecosystems.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              <div className="bg-mosaic-green rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="font-serif font-bold mb-2">Ethical Sourcing</h3>
-              <p className="text-sm">
-                We ensure fair wages and safe working conditions for all our farmers and workers.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-              <div className="bg-mosaic-green rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                <Leaf className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="font-serif font-bold mb-2">Community Empowerment</h3>
-              <p className="text-sm">
-                We invest in education, healthcare, and infrastructure to improve the quality of life in our communities.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.5s" }}>
-              <div className="bg-mosaic-green rounded-full w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                <Leaf className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="font-serif font-bold mb-2">Organic Products</h3>
-              <p className="text-sm">
-                We provide healthy, nutritious food grown without synthetic pesticides or fertilizers.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Our Team Section */}
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="section-heading text-center mb-12 animate-fade-in">Our Team</h2>
-
+      
+      {/* Team Section */}
+      <section className="py-16 px-4 bg-white border-t border-gray-200">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="section-heading text-center mb-12">Our Team</h2>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Dr. Wright */}
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in">
-              <div className="h-64 overflow-hidden">
-                <img
-                  src="public/lovable-uploads/f91a00f6-d650-4774-a54e-9d66af7e4d9b.png"
-                  alt="Dr. Wright"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-mosaic-earth text-center">
+              <div className="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4">
+                {/* Placeholder for profile image */}
               </div>
-              <div className="p-4">
-                <h3 className="font-serif font-bold text-mosaic-green-dark mb-2">Dr. Wright</h3>
-                <p className="text-sm text-gray-600">Chief Agronomist</p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Dr. Wright is an expert in sustainable agriculture with over 20 years of experience.
-                </p>
-              </div>
+              <h3 className="text-xl font-serif font-bold text-mosaic-green-dark">Dr. Kaadze Wright</h3>
+              <p className="text-sm text-gray-600 mb-3">Founder & CEO</p>
+              <p className="text-sm">
+                Agricultural economist with 15+ years of experience in sustainable farming practices and rural development.
+              </p>
             </div>
-
-            {/* Rhoda */}
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-              <div className="h-64 overflow-hidden">
-                <img
-                  src="public/lovable-uploads/eba3e283-d702-43ea-82cd-c8a23031f384.png"
-                  alt="Rhoda"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-mosaic-earth text-center">
+              <div className="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4">
+                {/* Placeholder for profile image */}
               </div>
-              <div className="p-4">
-                <h3 className="font-serif font-bold text-mosaic-green-dark mb-2">Rhoda</h3>
-                <p className="text-sm text-gray-600">Community Liaison</p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Rhoda is passionate about empowering local communities and ensuring fair trade practices.
-                </p>
-              </div>
+              <h3 className="text-xl font-serif font-bold text-mosaic-green-dark">Ama Osei</h3>
+              <p className="text-sm text-gray-600 mb-3">Operations Director</p>
+              <p className="text-sm">
+                Logistics expert who oversees our farming operations and ensures efficient distribution of products.
+              </p>
             </div>
-
-            {/* Emmanuel */}
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-              <div className="h-64 overflow-hidden">
-                <img
-                  src="public/lovable-uploads/5030a9ef-4b97-42e5-a600-b00599a1beb7.png"
-                  alt="Emmanuel"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-mosaic-earth text-center">
+              <div className="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4">
+                {/* Placeholder for profile image */}
               </div>
-              <div className="p-4">
-                <h3 className="font-serif font-bold text-mosaic-green-dark mb-2">Emmanuel</h3>
-                <p className="text-sm text-gray-600">Farm Manager</p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Emmanuel oversees the day-to-day operations of our farms, ensuring quality and efficiency.
-                </p>
-              </div>
+              <h3 className="text-xl font-serif font-bold text-mosaic-green-dark">Kwame Darko</h3>
+              <p className="text-sm text-gray-600 mb-3">Community Relations</p>
+              <p className="text-sm">
+                Passionate about social impact, Kwame manages our community engagement programs and cooperative relationships.
+              </p>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Contact Section */}
-      <section className="py-16 px-4 bg-mosaic-green text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-mosaic-green-dark to-mosaic-green opacity-50"></div>
-        <div className="container mx-auto max-w-4xl text-center relative z-10">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4 animate-fade-in">
-            Join Our Mission
+      
+      {/* Values Section */}
+      <section className="py-16 px-4 bg-mosaic-green text-white">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8">
+            Our Core Values
           </h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            Learn more about our sustainable farming practices and how you can support our mission.
-          </p>
-          <a href="/contact" className="inline-block bg-white text-mosaic-green-dark px-6 py-3 rounded-md hover:bg-mosaic-earth hover:text-mosaic-green-dark transition-colors duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Contact Us
-          </a>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-3">Sustainability</h3>
+              <p>Committed to environmentally responsible farming practices that preserve Ghana's natural resources</p>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-3">Community</h3>
+              <p>Investing in people and communities to create lasting positive social impact</p>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold mb-3">Innovation</h3>
+              <p>Continuously exploring new ways to improve our products and practices</p>
+            </div>
+          </div>
+          
+          <div className="mt-12">
+            <Link to="/impact" className="inline-block bg-white text-mosaic-green-dark px-6 py-3 rounded-md hover:bg-mosaic-earth hover:text-mosaic-green-dark transition-colors duration-300">
+              Learn About Our Impact
+            </Link>
+          </div>
         </div>
       </section>
-
+      
       <Footer />
     </div>
   );

@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import HeroSection from '../components/HeroSection';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
-import { useToast } from '../hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 const Contact = () => {
   const { toast } = useToast();
@@ -45,17 +45,13 @@ const Contact = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="bg-mosaic-green-dark text-white py-20 px-4">
-        <div className="container mx-auto text-center max-w-3xl">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
-            Contact Us
-          </h1>
-          <p className="text-xl">
-            Get in touch with the Mosaic Grove team for inquiries, partnerships, or more information
-          </p>
-        </div>
-      </section>
+      {/* Hero Section with new component */}
+      <HeroSection
+        title="Contact Us"
+        subtitle="Get in touch with the Mosaic Grove team for inquiries, partnerships, or more information"
+        backgroundImage="/lovable-uploads/d9ef7ed8-9299-4ad9-8c34-939104708d9f.png"
+        height="py-40"
+      />
       
       {/* Contact Form & Info */}
       <section className="py-16 px-4 bg-white">

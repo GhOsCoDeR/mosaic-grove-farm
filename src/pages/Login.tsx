@@ -6,14 +6,19 @@ import Footer from '../components/Footer';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,14 +74,23 @@ const Login = () => {
                 <Input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
-                  className="pl-10"
+                  className="pl-10 pr-10"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                <div 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer" 
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? 
+                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" /> :
+                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  }
+                </div>
               </div>
             </div>
 

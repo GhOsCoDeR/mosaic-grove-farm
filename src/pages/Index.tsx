@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ParticleBackground from '../components/ParticleBackground';
 import { ArrowRight, Leaf, Users, TrendingUp } from 'lucide-react';
 
 const Index = () => {
@@ -10,8 +12,18 @@ const Index = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="hero-section text-white py-32 px-4">
-        <div className="container mx-auto text-center max-w-4xl animate-fade-in">
+      <section className="hero-section relative text-white py-32 px-4">
+        <div 
+          className="absolute inset-0 z-0" 
+          style={{ 
+            backgroundImage: `url('/lovable-uploads/d9ef7ed8-9299-4ad9-8c34-939104708d9f.png')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 40%',
+          }}
+        ></div>
+        <div className="absolute inset-0 bg-black/40 z-0"></div>
+        <ParticleBackground className="z-1" particleColor="#ffffff" />
+        <div className="container mx-auto text-center max-w-4xl relative z-10 animate-fade-in">
           <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
             Sustainable Farming for Community Empowerment
           </h1>
@@ -38,7 +50,7 @@ const Index = () => {
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            <div className="bg-mosaic-earth-light p-6 rounded-lg text-center">
+            <div className="bg-mosaic-earth-light p-6 rounded-lg text-center hover:shadow-md transition-shadow duration-300 transform hover:-translate-y-1 hover:scale-102 transition-transform duration-300">
               <div className="bg-mosaic-green rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <Leaf className="h-8 w-8 text-white" />
               </div>
@@ -46,7 +58,7 @@ const Index = () => {
               <p>Cultivating organic cashews and tiger nuts using eco-friendly methods that preserve our environment.</p>
             </div>
             
-            <div className="bg-mosaic-earth-light p-6 rounded-lg text-center">
+            <div className="bg-mosaic-earth-light p-6 rounded-lg text-center hover:shadow-md transition-shadow duration-300 transform hover:-translate-y-1 hover:scale-102 transition-transform duration-300">
               <div className="bg-mosaic-green rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <Users className="h-8 w-8 text-white" />
               </div>
@@ -54,7 +66,7 @@ const Index = () => {
               <p>Creating meaningful employment opportunities for women and youth in rural Ghana.</p>
             </div>
             
-            <div className="bg-mosaic-earth-light p-6 rounded-lg text-center">
+            <div className="bg-mosaic-earth-light p-6 rounded-lg text-center hover:shadow-md transition-shadow duration-300 transform hover:-translate-y-1 hover:scale-102 transition-transform duration-300">
               <div className="bg-mosaic-green rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <TrendingUp className="h-8 w-8 text-white" />
               </div>
@@ -69,7 +81,7 @@ const Index = () => {
       <section className="py-16 px-4 bg-mosaic-earth-light">
         <div className="container mx-auto max-w-5xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div>
+            <div className="animate-fade-in">
               <h2 className="section-heading">Our Story</h2>
               <p className="mb-4">
                 Founded by Dr. Kaadze Wright, Mosaic Grove began with a vision to transform rural Ghanaian communities through sustainable agriculture. After leaving Ghana at 17, Dr. Wright returned with a mission to create jobs and ensure food security.
@@ -77,15 +89,16 @@ const Index = () => {
               <p className="mb-6">
                 Starting with a 100-acre organic cashew farm in 2018 and expanding to tiger nut cultivation in 2020, we're now pioneering innovative plant-based products while supporting local farmers.
               </p>
-              <Link to="/about" className="inline-flex items-center text-mosaic-green font-medium">
+              <Link to="/about" className="inline-flex items-center text-mosaic-green font-medium hover:text-mosaic-green-dark transition-colors">
                 Read our full story <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </div>
-            <div className="bg-gray-200 h-80 rounded-lg">
-              {/* Placeholder for founder image */}
-              <div className="w-full h-full flex items-center justify-center text-gray-500">
-                Founder Image
-              </div>
+            <div className="rounded-lg overflow-hidden shadow-lg animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <img 
+                src="/lovable-uploads/c22771de-87f4-4515-8f9a-0327322baa53.png" 
+                alt="Our Farm" 
+                className="w-full h-80 object-cover"
+              />
             </div>
           </div>
         </div>
@@ -101,36 +114,38 @@ const Index = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white border border-mosaic-earth rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <div className="bg-gray-200 h-48">
-                {/* Placeholder for cashew product image */}
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
-                  Cashew Products Image
-                </div>
+              <div className="h-48 bg-mosaic-earth-light/50 relative overflow-hidden">
+                <img 
+                  src="/lovable-uploads/d9ef7ed8-9299-4ad9-8c34-939104708d9f.png" 
+                  alt="Organic Cashews"
+                  className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+                />
               </div>
               <div className="p-6">
                 <h3 className="section-subheading">Organic Cashews</h3>
                 <p className="mb-4">
                   Ethically grown and harvested cashews from our farms in the Eastern Afram Plains.
                 </p>
-                <Link to="/products" className="inline-flex items-center text-mosaic-green font-medium">
+                <Link to="/products" className="inline-flex items-center text-mosaic-green font-medium hover:text-mosaic-green-dark transition-colors">
                   Learn more <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </div>
             </div>
             
             <div className="bg-white border border-mosaic-earth rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <div className="bg-gray-200 h-48">
-                {/* Placeholder for tiger nut product image */}
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
-                  Tiger Nut Products Image
-                </div>
+              <div className="h-48 bg-mosaic-earth-light/50 relative overflow-hidden">
+                <img 
+                  src="/lovable-uploads/c22771de-87f4-4515-8f9a-0327322baa53.png" 
+                  alt="Tiger Nut Products"
+                  className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500"
+                />
               </div>
               <div className="p-6">
                 <h3 className="section-subheading">Tiger Nut Products</h3>
                 <p className="mb-4">
                   Nutritious tiger nut flour and upcoming plant-based milk, frozen desserts, and baked goods.
                 </p>
-                <Link to="/products" className="inline-flex items-center text-mosaic-green font-medium">
+                <Link to="/products" className="inline-flex items-center text-mosaic-green font-medium hover:text-mosaic-green-dark transition-colors">
                   Learn more <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </div>

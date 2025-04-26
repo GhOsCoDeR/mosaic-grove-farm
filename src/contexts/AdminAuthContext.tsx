@@ -63,7 +63,7 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
           const role = await checkAdminRole(currentSession.user.id);
 
           if (role) {
-            const profile = await supabase
+            const { data: profile, error } = await supabase
               .from('profiles')
               .select('name, email')
               .eq('id', currentSession.user.id)
@@ -71,7 +71,7 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
 
             setAdmin({
               id: currentSession.user.id,
-              username: profile.data?.name || currentSession.user.email || 'Admin User',
+              username: profile?.name || currentSession.user.email || 'Admin User',
               role: role
             });
           } else {
@@ -90,7 +90,7 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
         const role = await checkAdminRole(currentSession.user.id);
 
         if (role) {
-          const profile = await supabase
+          const { data: profile, error } = await supabase
             .from('profiles')
             .select('name, email')
             .eq('id', currentSession.user.id)
@@ -98,7 +98,7 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
 
           setAdmin({
             id: currentSession.user.id,
-            username: profile.data?.name || currentSession.user.email || 'Admin User',
+            username: profile?.name || currentSession.user.email || 'Admin User',
             role: role
           });
         }
@@ -146,7 +146,7 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
           return false;
         }
         
-        const profile = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('name, email')
           .eq('id', data.user.id)
@@ -154,7 +154,7 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
         
         setAdmin({
           id: data.user.id,
-          username: profile.data?.name || data.user.email || 'Admin User',
+          username: profile?.name || data.user.email || 'Admin User',
           role: role
         });
         
