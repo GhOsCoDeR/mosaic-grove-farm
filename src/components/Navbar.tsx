@@ -11,7 +11,7 @@ const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const { cartItems } = useCart();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, profile, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,6 +41,8 @@ const Navbar: React.FC = () => {
   // Check if path is admin route to hide navbar
   const isAdminRoute = location.pathname.startsWith('/admin');
   if (isAdminRoute) return null;
+
+  const displayName = profile?.name || user?.email?.split('@')[0] || 'User';
 
   return (
     <header 
@@ -114,7 +116,7 @@ const Navbar: React.FC = () => {
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <div className="text-sm text-mosaic-green-dark">
-                  Hello, {user?.name.split(' ')[0]}
+                  Hello, {displayName.split(' ')[0]}
                 </div>
                 <Button 
                   variant="outline" 
@@ -231,7 +233,7 @@ const Navbar: React.FC = () => {
               {isAuthenticated ? (
                 <div className="flex flex-col items-center space-y-2 w-full">
                   <div className="text-sm text-mosaic-green-dark">
-                    Hello, {user?.name.split(' ')[0]}
+                    Hello, {displayName.split(' ')[0]}
                   </div>
                   <Button 
                     variant="outline" 

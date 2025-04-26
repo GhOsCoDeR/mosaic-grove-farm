@@ -74,11 +74,11 @@ const Cart = () => {
               <div className="grid grid-cols-6 gap-4 items-center">
                 <div className="col-span-3 flex items-center space-x-4">
                   <div className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden">
-                    <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                    <img src={item.product.image_url || '/placeholder.svg'} alt={item.product.name} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <div className="font-medium text-mosaic-green-dark">{item.product.name}</div>
-                    <div className="text-sm text-gray-600">{item.product.category}</div>
+                    <div className="text-sm text-gray-600">{item.product.category_id}</div>
                     {item.selectedVariation && Object.keys(item.selectedVariation).length > 0 && (
                       <div className="text-xs text-gray-500 mt-1">
                         {Object.entries(item.selectedVariation).map(([key, value]) => (
@@ -88,7 +88,7 @@ const Cart = () => {
                     )}
                     {item.selectedWeight && (
                       <div className="text-xs text-gray-500">
-                        Weight: {item.selectedWeight}{item.product.weight?.unit}
+                        Weight: {item.selectedWeight}
                       </div>
                     )}
                   </div>
@@ -96,14 +96,14 @@ const Cart = () => {
                 <div className="text-center">${item.product.price.toFixed(2)}</div>
                 <div className="flex items-center justify-center space-x-2">
                   <button 
-                    onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedVariation, item.selectedWeight)}
+                    onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.id)}
                     className="text-mosaic-green-dark hover:text-mosaic-green bg-gray-100 hover:bg-gray-200 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
                   >
                     <Minus size={16} />
                   </button>
                   <span className="w-8 text-center">{item.quantity}</span>
                   <button 
-                    onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedVariation, item.selectedWeight)}
+                    onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.id)}
                     className="text-mosaic-green-dark hover:text-mosaic-green bg-gray-100 hover:bg-gray-200 rounded-full w-6 h-6 flex items-center justify-center transition-colors"
                   >
                     <Plus size={16} />
@@ -112,7 +112,7 @@ const Cart = () => {
                 <div className="flex justify-end items-center space-x-3">
                   <span>${(item.product.price * item.quantity).toFixed(2)}</span>
                   <button 
-                    onClick={() => removeFromCart(item.product.id, item.selectedVariation, item.selectedWeight)}
+                    onClick={() => removeFromCart(item.product.id, item.id)}
                     className="text-gray-500 hover:text-red-500 transition-colors"
                   >
                     <Trash size={16} />

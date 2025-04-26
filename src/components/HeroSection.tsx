@@ -12,6 +12,8 @@ interface HeroSectionProps {
   textColor?: string;
   overlayClass?: string;
   particleColor?: string;
+  particleCount?: number;
+  particleSpeed?: number;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ 
@@ -23,7 +25,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   children,
   textColor = "text-white",
   overlayClass = "bg-black/30",
-  particleColor = "#ffffff"
+  particleColor = "#ffffff",
+  particleCount = 30,
+  particleSpeed = 0.5
 }) => {
   return (
     <section 
@@ -41,7 +45,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       {backgroundImage && <div className={`absolute inset-0 ${overlayClass}`}></div>}
       
       {/* Particles effect */}
-      <ParticleBackground particleColor={particleColor} />
+      <ParticleBackground 
+        particleColor={particleColor}
+        particleCount={particleCount}
+        particleSpeed={particleSpeed}
+      />
       
       {/* Content */}
       <div className="container relative z-10 mx-auto text-center max-w-4xl animate-fade-in">

@@ -19,8 +19,8 @@ export type CartItem = {
   id?: string;
   product: Product;
   quantity: number;
-  selectedVariation?: Record<string, string>;
-  selectedWeight?: number;
+  selectedVariation?: Record<string, string> | null;
+  selectedWeight?: number | null;
 };
 
 type CartState = {
@@ -31,9 +31,9 @@ type CartState = {
 type CartAction =
   | { type: 'SET_CART'; payload: CartItem[] }
   | { type: 'SET_WISHLIST'; payload: Product[] }
-  | { type: 'ADD_TO_CART'; payload: { product: Product; quantity: number; selectedVariation?: Record<string, string>; selectedWeight?: number; } }
+  | { type: 'ADD_TO_CART'; payload: { product: Product; quantity: number; selectedVariation?: Record<string, string> | null; selectedWeight?: number | null; } }
   | { type: 'REMOVE_FROM_CART'; payload: { id: string; itemId?: string } }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number; itemId?: string; selectedVariation?: Record<string, string>; selectedWeight?: number; } }
+  | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number; itemId?: string; selectedVariation?: Record<string, string> | null; selectedWeight?: number | null; } }
   | { type: 'CLEAR_CART' }
   | { type: 'ADD_TO_WISHLIST'; payload: Product }
   | { type: 'REMOVE_FROM_WISHLIST'; payload: string };
@@ -41,9 +41,9 @@ type CartAction =
 type CartContextType = {
   cartItems: CartItem[];
   wishlistItems: Product[];
-  addToCart: (product: Product, quantity?: number, selectedVariation?: Record<string, string>, selectedWeight?: number) => Promise<void>;
+  addToCart: (product: Product, quantity?: number, selectedVariation?: Record<string, string> | null, selectedWeight?: number | null) => Promise<void>;
   removeFromCart: (productId: string, itemId?: string) => Promise<void>;
-  updateQuantity: (productId: string, quantity: number, itemId?: string, selectedVariation?: Record<string, string>, selectedWeight?: number) => Promise<void>;
+  updateQuantity: (productId: string, quantity: number, itemId?: string, selectedVariation?: Record<string, string> | null, selectedWeight?: number | null) => Promise<void>;
   clearCart: () => Promise<void>;
   addToWishlist: (product: Product) => Promise<void>;
   removeFromWishlist: (productId: string) => Promise<void>;
@@ -59,7 +59,7 @@ const initialState: CartState = {
 export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // Helper function to check if two variations are the same
-const areVariationsSame = (var1?: Record<string, string>, var2?: Record<string, string>): boolean => {
+const areVariationsSame = (var1?: Record<string, string> | null, var2?: Record<string, string> | null): boolean => {
   if (!var1 && !var2) return true;
   if (!var1 || !var2) return false;
 
@@ -212,7 +212,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             id: item.id,
             product: item.products,
             quantity: item.quantity,
-            selectedVariation: item.selected_variations,
+            selectedVariation: item.selected_variations as Record<string, string> | null,
             selectedWeight: item.selected_weight,
           }));
           
