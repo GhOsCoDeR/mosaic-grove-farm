@@ -46,4 +46,46 @@ export interface Product {
     unit: string;
   };
   image?: string; // Alias for image_url for backward compatibility
+
+  // Additional properties for legacy code compatibility
+  category_name?: string; // Added for old code using product.category directly
+  
+  // Properties for mock data compatibility
+  weight_options?: {
+    options: number[];
+    unit: string;
+  };
+  variation_options?: {
+    name: string;
+    options: string[];
+  }[];
+}
+
+// Mock product type for the old code with numeric IDs
+export interface LegacyProduct {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  variations?: {
+    name: string;
+    options: string[];
+  }[];
+  weight?: {
+    options: number[];
+    unit: string;
+  };
+}
+
+// Helper function to convert between numeric and string IDs
+export function convertProductIdType(id: string | number): string | number {
+  if (typeof id === 'string' && !isNaN(Number(id))) {
+    return Number(id);
+  }
+  if (typeof id === 'number') {
+    return String(id);
+  }
+  return id;
 }

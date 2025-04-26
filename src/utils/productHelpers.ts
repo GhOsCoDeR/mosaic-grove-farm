@@ -1,5 +1,5 @@
 
-import { Product, Category, ProductWeight, ProductVariation } from '../types/products';
+import { Product, Category, ProductWeight, ProductVariation, convertProductIdType } from '../types/products';
 
 /**
  * Extends a product with related data
@@ -15,6 +15,11 @@ export function extendProduct(
   // Add category data if available
   if (categories && product.category_id) {
     extendedProduct.category = categories.find(c => c.id === product.category_id) || undefined;
+    
+    // For backward compatibility with components expecting a category string
+    if (extendedProduct.category) {
+      extendedProduct.category_name = extendedProduct.category.name;
+    }
   }
   
   // Add related weights if available
@@ -30,6 +35,14 @@ export function extendProduct(
           unit: productWeights[0].unit
         };
       }
+      
+      // For backward compatibility with components expecting weight options
+      const weightOptions = productWeights.map(w => w.weight);
+      const unit = productWeights[0]?.unit || 'g';
+      extendedProduct.weight_options = {
+        options: weightOptions,
+        unit
+      };
     }
   }
   
@@ -38,6 +51,12 @@ export function extendProduct(
     const productVariations = variations.filter(v => v.product_id === product.id);
     if (productVariations.length > 0) {
       extendedProduct.variations = productVariations;
+      
+      // For backward compatibility with components expecting variation options
+      extendedProduct.variation_options = productVariations.map(v => ({
+        name: v.name,
+        options: Object.values(v.options).flat()
+      }));
     }
   }
   
@@ -52,4 +71,11 @@ export function extendProduct(
  */
 export function formatPrice(price: number): string {
   return price.toFixed(2);
+}
+
+/**
+ * Safely compares product IDs regardless of their type (string or number)
+ */
+export function isSameProduct(id1: string | number, id2: string | number): boolean {
+  return String(id1) === String(id2);
 }

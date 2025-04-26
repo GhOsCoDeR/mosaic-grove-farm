@@ -7,13 +7,14 @@ import { useCart } from '../hooks/useCart';
 import { ShoppingCart, Trash, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { isSameProduct } from '../utils/productHelpers';
 
 const Wishlist = () => {
   const { wishlistItems, addToCart, removeFromWishlist } = useCart();
   const { toast } = useToast();
 
-  const handleAddToCart = (productId: number) => {
-    const product = wishlistItems.find(item => item.id === productId);
+  const handleAddToCart = (productId: string) => {
+    const product = wishlistItems.find(item => isSameProduct(item.id, productId));
     if (product) {
       addToCart(product);
       toast({
@@ -23,7 +24,7 @@ const Wishlist = () => {
     }
   };
 
-  const handleRemoveFromWishlist = (productId: number) => {
+  const handleRemoveFromWishlist = (productId: string) => {
     removeFromWishlist(productId);
     toast({
       title: "Removed from Wishlist",
@@ -66,13 +67,13 @@ const Wishlist = () => {
                 <div className="grid grid-cols-6 gap-4 items-center">
                   <div className="col-span-3 flex items-center space-x-4">
                     <Link to={`/product/${item.id}`} className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={item.image_url || item.image} alt={item.name} className="w-full h-full object-cover" />
                     </Link>
                     <div>
                       <Link to={`/product/${item.id}`} className="font-medium text-mosaic-green-dark hover:text-mosaic-green transition-colors">
                         {item.name}
                       </Link>
-                      <div className="text-sm text-gray-600">{item.category}</div>
+                      <div className="text-sm text-gray-600">{item.category_name || (item.category?.name)}</div>
                     </div>
                   </div>
                   <div className="text-center font-medium">${item.price.toFixed(2)}</div>
