@@ -2,28 +2,26 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+
+type AdminRole = 'admin' | 'super-admin';
 
 type Admin = {
   id: string;
   username: string;
-  role: 'admin' | 'super-admin';
+  role: AdminRole;
 };
 
 type AdminAuthContextType = {
   admin: Admin | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 };
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
-
-// Mock admin database for demo purposes
-const mockAdmins = [
-  { id: 'admin1', username: 'admin', password: 'admin123', role: 'admin' as const },
-  { id: 'admin2', username: 'superadmin', password: 'super123', role: 'super-admin' as const }
-];
 
 export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [admin, setAdmin] = useState<Admin | null>(null);
@@ -31,54 +29,159 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check for saved admin in localStorage
-    const storedAdmin = localStorage.getItem('mosaicAdmin');
-    if (storedAdmin) {
-      try {
-        const parsedAdmin = JSON.parse(storedAdmin);
-        setAdmin(parsedAdmin);
-      } catch (error) {
-        console.error('Failed to parse stored admin:', error);
-        localStorage.removeItem('mosaicAdmin');
-      }
-    }
-    setIsLoading(false);
-  }, []);
+  // Check if user has admin role
+  const checkAdminRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('admin_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Find admin in mock database
-    const foundAdmin = mockAdmins.find(a => a.username === username && a.password === password);
-    
-    if (foundAdmin) {
-      const { password: _, ...adminWithoutPassword } = foundAdmin;
-      setAdmin(adminWithoutPassword);
-      localStorage.setItem('mosaicAdmin', JSON.stringify(adminWithoutPassword));
-      toast({
-        title: "Login Successful",
-        description: "Welcome to Mosaic Grove Admin Panel!",
-      });
-      setIsLoading(false);
-      return true;
+      if (error) {
+        console.error('Error checking admin role:', error);
+        return false;
+      }
+
+      if (data) {
+        return data.role as AdminRole;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Error checking admin role:', error);
+      return false;
     }
-    
-    toast({
-      title: "Login Failed",
-      description: "Invalid username or password. Please try again.",
-      variant: "destructive",
-    });
-    setIsLoading(false);
-    return false;
   };
 
-  const logout = () => {
+  useEffect(() => {
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        if (currentSession?.user) {
+          // Check if user has admin role
+          const role = await checkAdminRole(currentSession.user.id);
+
+          if (role) {
+            const profile = await supabase
+              .from('profiles')
+              .select('name, email')
+              .eq('id', currentSession.user.id)
+              .single();
+
+            setAdmin({
+              id: currentSession.user.id,
+              username: profile.data?.name || currentSession.user.email || 'Admin User',
+              role: role
+            });
+          } else {
+            setAdmin(null);
+          }
+        } else {
+          setAdmin(null);
+        }
+      }
+    );
+
+    // Then check for existing session
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      if (currentSession?.user) {
+        // Check if user has admin role
+        const role = await checkAdminRole(currentSession.user.id);
+
+        if (role) {
+          const profile = await supabase
+            .from('profiles')
+            .select('name, email')
+            .eq('id', currentSession.user.id)
+            .single();
+
+          setAdmin({
+            id: currentSession.user.id,
+            username: profile.data?.name || currentSession.user.email || 'Admin User',
+            role: role
+          });
+        }
+      }
+      
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        toast({
+          title: "Login Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return false;
+      }
+      
+      if (data.user) {
+        // Check if user has admin role
+        const role = await checkAdminRole(data.user.id);
+        
+        if (!role) {
+          toast({
+            title: "Access Denied",
+            description: "You don't have administrator privileges.",
+            variant: "destructive",
+          });
+          await supabase.auth.signOut();
+          setIsLoading(false);
+          return false;
+        }
+        
+        const profile = await supabase
+          .from('profiles')
+          .select('name, email')
+          .eq('id', data.user.id)
+          .single();
+        
+        setAdmin({
+          id: data.user.id,
+          username: profile.data?.name || data.user.email || 'Admin User',
+          role: role
+        });
+        
+        toast({
+          title: "Login Successful",
+          description: "Welcome to Mosaic Grove Admin Panel!",
+        });
+        setIsLoading(false);
+        return true;
+      }
+      
+      setIsLoading(false);
+      return false;
+    } catch (error: any) {
+      toast({
+        title: "Login Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return false;
+    }
+  };
+
+  const logout = async () => {
     setAdmin(null);
-    localStorage.removeItem('mosaicAdmin');
+    await supabase.auth.signOut();
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out.",
