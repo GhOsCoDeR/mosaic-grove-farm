@@ -49,16 +49,6 @@ export interface Product {
 
   // Additional properties for compatibility
   category_name?: string; // Added for old code using product.category directly
-  
-  // Properties for mock data compatibility
-  weight_options?: {
-    options: number[];
-    unit: string;
-  };
-  variation_options?: {
-    name: string;
-    options: string[];
-  }[];
 }
 
 // Helper function to convert between numeric and string IDs
