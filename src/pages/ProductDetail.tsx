@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCart } from '../hooks/useCart';
-import { Product } from '../contexts/CartContext';
+import { Product } from '../types/products';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { 
@@ -12,15 +11,20 @@ import {
   Truck, Package, Leaf, Star, Check, Tag
 } from 'lucide-react';
 
-// Mock data for the product detail page
+// Mock data for the product detail page with string IDs
 const products: Product[] = [
   {
-    id: 1,
+    id: "1",
     name: "Organic Cashews",
     description: "Ethically grown and harvested cashews from our farms in the Eastern Afram Plains. Our cashews are cultivated using sustainable farming practices that preserve the environment while producing premium quality nuts. Perfect for snacking, cooking, or making homemade cashew milk.",
     price: 12.99,
+    image_url: "https://images.unsplash.com/photo-1563412580953-7f9e99209336",
+    category_id: null,
+    inventory_count: 100,
+    is_featured: true,
     image: "https://images.unsplash.com/photo-1563412580953-7f9e99209336",
-    category: "Nuts",
+    category_name: "Nuts",
+    category: { name: "Nuts" },
     variations: [
       {
         name: "Type",
@@ -33,12 +37,17 @@ const products: Product[] = [
     }
   },
   {
-    id: 2,
+    id: "2",
     name: "Tiger Nut Flour",
     description: "Our signature product, perfect for gluten-free baking and adding nutritional value to smoothies and recipes. This versatile flour is made from ground tiger nuts, which are rich in fiber, vitamins, and minerals. Ideal for making pancakes, breads, cookies, and other baked goods.",
     price: 9.99,
+    image_url: "https://images.unsplash.com/photo-1614961233913-a5113a4a34ed",
+    category_id: null,
+    inventory_count: 100,
+    is_featured: true,
     image: "https://images.unsplash.com/photo-1614961233913-a5113a4a34ed",
-    category: "Flour",
+    category_name: "Flour",
+    category: { name: "Flour" },
     variations: [
       {
         name: "Processing",
@@ -51,12 +60,17 @@ const products: Product[] = [
     }
   },
   {
-    id: 3,
+    id: "3",
     name: "Tiger Nut Milk",
     description: "Creamy plant-based milk alternative rich in nutrients and natural sweetness. Our tiger nut milk is dairy-free, nut-free, and soy-free, making it an excellent alternative for those with allergies or dietary restrictions. Enjoy it on its own, in coffee, or use it in recipes.",
     price: 6.99,
+    image_url: "https://images.unsplash.com/photo-1550583724-b2692b85b150",
+    category_id: null,
+    inventory_count: 100,
+    is_featured: true,
     image: "https://images.unsplash.com/photo-1550583724-b2692b85b150",
-    category: "Beverages",
+    category_name: "Beverages",
+    category: { name: "Beverages" },
     variations: [
       {
         name: "Flavor",
@@ -69,12 +83,17 @@ const products: Product[] = [
     }
   },
   {
-    id: 4,
+    id: "4",
     name: "Tiger Nut Dessert",
     description: "Frozen treats featuring the unique flavor and nutrition of tiger nuts. Our tiger nut desserts are dairy-free and naturally sweetened. They make a perfect healthy alternative to traditional ice cream while being rich in nutrients and fiber.",
     price: 8.99,
+    image_url: "https://images.unsplash.com/photo-1551024506-0bccd828d307",
+    category_id: null,
+    inventory_count: 100,
+    is_featured: true,
     image: "https://images.unsplash.com/photo-1551024506-0bccd828d307",
-    category: "Dessert",
+    category_name: "Dessert",
+    category: { name: "Dessert" },
     variations: [
       {
         name: "Flavor",
@@ -122,7 +141,7 @@ const reviews = [
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
-  const product = products.find(p => p.id === Number(productId));
+  const product = products.find(p => p.id === productId);
   const navigate = useNavigate();
   const { addToCart, addToWishlist, isInWishlist } = useCart();
   const { toast } = useToast();
@@ -435,7 +454,7 @@ const ProductDetail = () => {
                 {reviews.map((review) => (
                   <div key={review.id} className="border-b border-gray-200 pb-6">
                     <div className="flex justify-between mb-2">
-                      <h4 className="font-medium">{review.name}</h4>
+                      <h4 className="font-serif font-bold text-mosaic-green-dark">{review.name}</h4>
                       <span className="text-sm text-gray-500">
                         {new Date(review.date).toLocaleDateString('en-US', {
                           year: 'numeric',

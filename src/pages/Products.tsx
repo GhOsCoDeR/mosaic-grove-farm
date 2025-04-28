@@ -1,22 +1,26 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Leaf, Star, Plus, ShoppingCart, Heart, Eye } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
-import { Product as ProductType } from '../contexts/CartContext';
+import { Product } from '../types/products';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
-const products: ProductType[] = [
+const products: Product[] = [
   {
-    id: 1,
+    id: "1",
     name: "Organic Cashews",
     description: "Ethically grown and harvested cashews from our farms in the Eastern Afram Plains.",
     price: 12.99,
+    image_url: "https://images.unsplash.com/photo-1563412580953-7f9e99209336?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzaGV3c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60",
+    category_id: null,
+    inventory_count: 100,
+    is_featured: true,
     image: "https://images.unsplash.com/photo-1563412580953-7f9e99209336?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzaGV3c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60",
-    category: "Nuts",
+    category_name: "Nuts",
+    category: { name: "Nuts" },
     variations: [
       {
         name: "Type",
@@ -29,12 +33,17 @@ const products: ProductType[] = [
     }
   },
   {
-    id: 2,
+    id: "2",
     name: "Tiger Nut Flour",
     description: "Our signature product, perfect for gluten-free baking and adding nutritional value to smoothies and recipes.",
     price: 9.99,
+    image_url: "https://images.unsplash.com/photo-1614961233913-a5113a4a34ed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmxvdXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
+    category_id: null,
+    inventory_count: 100,
+    is_featured: true,
     image: "https://images.unsplash.com/photo-1614961233913-a5113a4a34ed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmxvdXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    category: "Flour",
+    category_name: "Flour",
+    category: { name: "Flour" },
     variations: [
       {
         name: "Processing",
@@ -47,12 +56,17 @@ const products: ProductType[] = [
     }
   },
   {
-    id: 3,
+    id: "3",
     name: "Tiger Nut Milk",
     description: "Creamy plant-based milk alternative rich in nutrients and natural sweetness.",
     price: 6.99,
+    image_url: "https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGxhbnQlMjBtaWxrfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
+    category_id: null,
+    inventory_count: 100,
+    is_featured: true,
     image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGxhbnQlMjBtaWxrfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
-    category: "Beverages",
+    category_name: "Beverages",
+    category: { name: "Beverages" },
     variations: [
       {
         name: "Flavor",
@@ -65,12 +79,17 @@ const products: ProductType[] = [
     }
   },
   {
-    id: 4,
+    id: "4",
     name: "Tiger Nut Dessert",
     description: "Frozen treats featuring the unique flavor and nutrition of tiger nuts.",
     price: 8.99,
+    image_url: "https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGljZSUyMGNyZWFtfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
+    category_id: null,
+    inventory_count: 100,
+    is_featured: true,
     image: "https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGljZSUyMGNyZWFtfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
-    category: "Dessert",
+    category_name: "Dessert",
+    category: { name: "Dessert" },
     variations: [
       {
         name: "Flavor",
@@ -114,7 +133,7 @@ const Products = () => {
     };
   }, []);
 
-  const handleAddToCart = (product: ProductType, e?: React.MouseEvent) => {
+  const handleAddToCart = (product: Product, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     addToCart(product);
     toast({
@@ -123,7 +142,7 @@ const Products = () => {
     });
   };
   
-  const handleAddToWishlist = (product: ProductType, e?: React.MouseEvent) => {
+  const handleAddToWishlist = (product: Product, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     addToWishlist(product);
     toast({
@@ -132,7 +151,7 @@ const Products = () => {
     });
   };
   
-  const handleViewDetails = (productId: number) => {
+  const handleViewDetails = (productId: string) => {
     navigate(`/product/${productId}`);
   };
 

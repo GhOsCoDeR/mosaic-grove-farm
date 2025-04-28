@@ -38,13 +38,13 @@ export interface Product {
   updated_at?: string;
   
   // Extended properties from related data (not part of the database schema)
-  category?: Category;
+  category?: Category | { name: string };
   weights?: ProductWeight[];
-  variations?: ProductVariation[];
+  variations?: ProductVariation[] | { name: string; options: string[] }[];
   weight?: {
     weight: number;
     unit: string;
-  };
+  } | { options: number[]; unit: string };
   image?: string; // Alias for image_url for backward compatibility
 
   // Additional properties for compatibility
