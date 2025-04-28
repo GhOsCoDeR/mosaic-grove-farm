@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingCart, User, Heart } from 'lucide-react';
@@ -249,10 +248,10 @@ const Navbar: React.FC = () => {
               ) : (
                 <Link to="/login" className="w-full" onClick={closeMenu}>
                   <Button 
-                    variant="outline" 
-                    className="border-mosaic-green text-mosaic-green hover:bg-mosaic-green-light w-full"
+                    variant="ghost" 
+                    className="text-mosaic-green-dark hover:text-mosaic-green w-full flex items-center justify-center gap-1"
                   >
-                    <User size={18} className="mr-2" /> Login
+                    <User size={18} /> Login
                   </Button>
                 </Link>
               )}
