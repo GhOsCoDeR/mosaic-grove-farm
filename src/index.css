@@ -80,4 +80,9 @@
   .btn-secondary {
     @apply bg-mosaic-earth text-mosaic-green-dark px-6 py-3 rounded-md hover:bg-mosaic-earth-dark hover:text-white transition-colors duration-300;
   }
+  
+  /* Fix for cart icon color */
+  .cart-icon-wrapper svg {
+    @apply text-mosaic-green-dark !important;
+  }
 }

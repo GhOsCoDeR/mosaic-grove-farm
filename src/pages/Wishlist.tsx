@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -67,26 +66,26 @@ const Wishlist = () => {
                 <div className="grid grid-cols-6 gap-4 items-center">
                   <div className="col-span-3 flex items-center space-x-4">
                     <Link to={`/product/${item.id}`} className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden">
-                      <img src={item.image_url || item.image} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={item.image_url || '/placeholder.svg'} alt={item.name} className="w-full h-full object-cover" />
                     </Link>
                     <div>
                       <Link to={`/product/${item.id}`} className="font-medium text-mosaic-green-dark hover:text-mosaic-green transition-colors">
                         {item.name}
                       </Link>
-                      <div className="text-sm text-gray-600">{item.category_name || (item.category?.name)}</div>
+                      <p className="text-sm text-gray-600">{item.category_name || (item.category && 'name' in item.category ? item.category.name : 'Uncategorized')}</p>
                     </div>
                   </div>
                   <div className="text-center font-medium">${item.price.toFixed(2)}</div>
                   <div className="col-span-2 flex justify-end items-center space-x-3">
                     <Button 
-                      onClick={() => handleAddToCart(item.id)}
+                      onClick={() => handleAddToCart(String(item.id))}
                       className="bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors"
                       size="sm"
                     >
                       <ShoppingCart size={16} className="mr-1" /> Add to Cart
                     </Button>
                     <Button 
-                      onClick={() => handleRemoveFromWishlist(item.id)}
+                      onClick={() => handleRemoveFromWishlist(String(item.id))}
                       variant="outline"
                       className="border-gray-300 text-gray-600 hover:text-red-500 hover:border-red-300 transition-colors"
                       size="sm"

@@ -11,12 +11,12 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      {/* Hero Section */}
+      {/* Hero Section with updated image */}
       <section className="hero-section relative text-white py-32 px-4">
         <div 
           className="absolute inset-0 z-0" 
           style={{ 
-            backgroundImage: `url('/lovable-uploads/d9ef7ed8-9299-4ad9-8c34-939104708d9f.png')`,
+            backgroundImage: `url('/lovable-uploads/eba3e283-d702-43ea-82cd-c8a23031f384.png')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center 40%',
           }}

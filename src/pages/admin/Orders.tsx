@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Eye, Check, X, Search, Filter, ArrowDown, ArrowUp } from 'lucide-react';
@@ -27,6 +26,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { supabase } from '@/integrations/supabase/client';
+
+type OrderProduct = {
+  name: string;
+  quantity: number;
+  price: number;
+  variation?: string;
+  weight?: string;
+};
 
 type Order = {
   id: string;
@@ -38,13 +46,7 @@ type Order = {
   email?: string;
   phone?: string;
   address?: string;
-  products?: {
-    name: string;
-    quantity: number;
-    price: number;
-    variation?: string;
-    weight?: string;
-  }[];
+  products?: OrderProduct[];
 };
 
 const statusColors: Record<string, { bg: string; text: string }> = {
@@ -57,84 +59,8 @@ const statusColors: Record<string, { bg: string; text: string }> = {
 
 const Orders = () => {
   const { toast } = useToast();
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: 'ORD-001',
-      customerName: 'John Doe',
-      date: '2025-04-15',
-      status: 'delivered',
-      total: 45.97,
-      items: 3,
-      email: 'john@example.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Main St, Anytown, CA 12345',
-      products: [
-        { name: 'Organic Cashews', quantity: 1, price: 12.99, variation: 'Plain', weight: '250g' },
-        { name: 'Tiger Nut Flour', quantity: 2, price: 9.99, weight: '500g' },
-        { name: 'Tiger Nut Milk', quantity: 1, price: 6.99, variation: 'Vanilla', weight: '1000ml' }
-      ]
-    },
-    {
-      id: 'ORD-002',
-      customerName: 'Jane Smith',
-      date: '2025-04-20',
-      status: 'processing',
-      total: 29.98,
-      items: 2,
-      email: 'jane@example.com',
-      phone: '+1 (555) 987-6543',
-      address: '456 Oak Ave, Othertown, NY 54321',
-      products: [
-        { name: 'Tiger Nut Dessert', quantity: 2, price: 8.99, variation: 'Chocolate', weight: '300g' },
-        { name: 'Organic Cashews', quantity: 1, price: 12.99, variation: 'Honey Roasted', weight: '500g' }
-      ]
-    },
-    {
-      id: 'ORD-003',
-      customerName: 'Robert Johnson',
-      date: '2025-04-22',
-      status: 'shipped',
-      total: 19.99,
-      items: 1,
-      email: 'robert@example.com',
-      phone: '+1 (555) 456-7890',
-      address: '789 Pine St, Somewhere, TX 67890',
-      products: [
-        { name: 'Tiger Nut Flour', quantity: 2, price: 9.99, weight: '250g' }
-      ]
-    },
-    {
-      id: 'ORD-004',
-      customerName: 'Emily Wilson',
-      date: '2025-04-23',
-      status: 'pending',
-      total: 77.95,
-      items: 5,
-      email: 'emily@example.com',
-      phone: '+1 (555) 234-5678',
-      address: '321 Elm St, Nowhere, FL 13579',
-      products: [
-        { name: 'Tiger Nut Milk', quantity: 3, price: 6.99, variation: 'Original', weight: '1000ml' },
-        { name: 'Organic Cashews', quantity: 2, price: 12.99, variation: 'Salted', weight: '100g' },
-        { name: 'Tiger Nut Dessert', quantity: 2, price: 8.99, variation: 'Strawberry', weight: '150g' }
-      ]
-    },
-    {
-      id: 'ORD-005',
-      customerName: 'Michael Brown',
-      date: '2025-04-24',
-      status: 'cancelled',
-      total: 12.99,
-      items: 1,
-      email: 'michael@example.com',
-      phone: '+1 (555) 876-5432',
-      address: '654 Maple Dr, Anywhere, WA 24680',
-      products: [
-        { name: 'Organic Cashews', quantity: 1, price: 12.99, variation: 'Plain', weight: '100g' }
-      ]
-    }
-  ]);
-
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortColumn, setSortColumn] = useState<keyof Order>('date');
@@ -142,10 +68,96 @@ const Orders = () => {
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [isViewOrderOpen, setIsViewOrderOpen] = useState(false);
 
-  // Get unique statuses from orders
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    setIsLoading(true);
+    try {
+      const { data: ordersData, error: ordersError } = await supabase
+        .from('orders')
+        .select(`
+          id, 
+          created_at, 
+          status, 
+          total_amount, 
+          shipping_address, 
+          payment_status, 
+          user_id,
+          profiles(name, email, phone)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (ordersError) {
+        throw ordersError;
+      }
+
+      const formattedOrders: Order[] = await Promise.all(
+        (ordersData || []).map(async (order) => {
+          const { data: orderItems, error: itemsError } = await supabase
+            .from('order_items')
+            .select(`
+              id, 
+              quantity, 
+              unit_price, 
+              selected_variations, 
+              selected_weight,
+              products(name)
+            `)
+            .eq('order_id', order.id);
+
+          if (itemsError) {
+            console.error('Error fetching order items:', itemsError);
+            return null;
+          }
+
+          const products = orderItems.map(item => ({
+            name: item.products?.name || 'Unknown Product',
+            quantity: item.quantity,
+            price: item.unit_price,
+            variation: item.selected_variations ? JSON.stringify(item.selected_variations) : undefined,
+            weight: item.selected_weight ? `${item.selected_weight}` : undefined,
+          }));
+
+          const shippingAddress = order.shipping_address ? 
+            typeof order.shipping_address === 'string' ? 
+              JSON.parse(order.shipping_address) : order.shipping_address : {};
+          
+          const addressString = shippingAddress ? 
+            `${shippingAddress.street || ''}, ${shippingAddress.city || ''}, ${shippingAddress.state || ''} ${shippingAddress.zipCode || ''}` : 
+            'No address provided';
+
+          return {
+            id: order.id,
+            customerName: order.profiles?.name || 'Unknown Customer',
+            date: new Date(order.created_at).toLocaleDateString(),
+            status: order.status as Order['status'],
+            total: order.total_amount,
+            items: orderItems.length,
+            email: order.profiles?.email || 'No email',
+            phone: order.profiles?.phone || 'No phone',
+            address: addressString,
+            products
+          };
+        })
+      );
+
+      setOrders(formattedOrders.filter(Boolean) as Order[]);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load orders data.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
-  // Filter and sort orders
   const filteredOrders = orders
     .filter(order => 
       (order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -175,14 +187,33 @@ const Orders = () => {
     setSortColumn(column);
   };
 
-  const updateOrderStatus = (orderId: string, newStatus: Order['status']) => {
-    setOrders(orders.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ));
-    toast({
-      title: "Order Status Updated",
-      description: `Order ${orderId} has been marked as ${newStatus}.`
-    });
+  const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+      if (error) {
+        throw error;
+      }
+
+      setOrders(orders.map(order => 
+        order.id === orderId ? { ...order, status: newStatus } : order
+      ));
+      
+      toast({
+        title: "Order Status Updated",
+        description: `Order ${orderId} has been marked as ${newStatus}.`
+      });
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update order status.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -225,162 +256,172 @@ const Orders = () => {
           </div>
           
           <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="bg-mosaic-earth-light">
-                  <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">
-                    <button 
-                      className="flex items-center"
-                      onClick={() => handleSort('id')}
-                    >
-                      Order ID
-                      {sortColumn === 'id' && (
-                        sortDirection === 'asc' 
-                          ? <ArrowUp size={14} className="ml-1" /> 
-                          : <ArrowDown size={14} className="ml-1" />
-                      )}
-                    </button>
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">
-                    <button 
-                      className="flex items-center"
-                      onClick={() => handleSort('customerName')}
-                    >
-                      Customer
-                      {sortColumn === 'customerName' && (
-                        sortDirection === 'asc' 
-                          ? <ArrowUp size={14} className="ml-1" /> 
-                          : <ArrowDown size={14} className="ml-1" />
-                      )}
-                    </button>
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">
-                    <button 
-                      className="flex items-center"
-                      onClick={() => handleSort('date')}
-                    >
-                      Date
-                      {sortColumn === 'date' && (
-                        sortDirection === 'asc' 
-                          ? <ArrowUp size={14} className="ml-1" /> 
-                          : <ArrowDown size={14} className="ml-1" />
-                      )}
-                    </button>
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">
-                    <button 
-                      className="flex items-center"
-                      onClick={() => handleSort('total')}
-                    >
-                      Total
-                      {sortColumn === 'total' && (
-                        sortDirection === 'asc' 
-                          ? <ArrowUp size={14} className="ml-1" /> 
-                          : <ArrowDown size={14} className="ml-1" />
-                      )}
-                    </button>
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">
-                    <button 
-                      className="flex items-center"
-                      onClick={() => handleSort('items')}
-                    >
-                      Items
-                      {sortColumn === 'items' && (
-                        sortDirection === 'asc' 
-                          ? <ArrowUp size={14} className="ml-1" /> 
-                          : <ArrowDown size={14} className="ml-1" />
-                      )}
-                    </button>
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-mosaic-earth-light">
-                {filteredOrders.map((order, index) => (
-                  <tr 
-                    key={order.id}
-                    className="hover:bg-gray-50 transition-colors animate-fade-in"
-                    style={{ animationDelay: `${index * 0.05 + 0.2}s` }}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap font-medium">{order.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{order.customerName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs ${statusColors[order.status].bg} ${statusColors[order.status].text}`}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">${order.total.toFixed(2)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{order.items}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="border-mosaic-green text-mosaic-green hover:bg-mosaic-green hover:text-white transition-colors"
-                          onClick={() => {
-                            setViewingOrder(order);
-                            setIsViewOrderOpen(true);
-                          }}
-                        >
-                          <Eye size={16} className="mr-1" />
-                          View
-                        </Button>
-                        {order.status === 'pending' && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors"
-                            onClick={() => updateOrderStatus(order.id, 'processing')}
-                          >
-                            <Check size={16} className="mr-1" />
-                            Process
-                          </Button>
+            {isLoading ? (
+              <div className="py-12 text-center text-gray-500">
+                Loading orders...
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="py-12 text-center text-gray-500">
+                No orders found in the database.
+              </div>
+            ) : (
+              <table className="min-w-full">
+                <thead>
+                  <tr className="bg-mosaic-earth-light">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort('id')}
+                      >
+                        Order ID
+                        {sortColumn === 'id' && (
+                          sortDirection === 'asc' 
+                            ? <ArrowUp size={14} className="ml-1" /> 
+                            : <ArrowDown size={14} className="ml-1" />
                         )}
-                        {order.status === 'processing' && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white transition-colors"
-                            onClick={() => updateOrderStatus(order.id, 'shipped')}
-                          >
-                            <Check size={16} className="mr-1" />
-                            Ship
-                          </Button>
+                      </button>
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort('customerName')}
+                      >
+                        Customer
+                        {sortColumn === 'customerName' && (
+                          sortDirection === 'asc' 
+                            ? <ArrowUp size={14} className="ml-1" /> 
+                            : <ArrowDown size={14} className="ml-1" />
                         )}
-                        {order.status === 'shipped' && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white transition-colors"
-                            onClick={() => updateOrderStatus(order.id, 'delivered')}
-                          >
-                            <Check size={16} className="mr-1" />
-                            Deliver
-                          </Button>
+                      </button>
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort('date')}
+                      >
+                        Date
+                        {sortColumn === 'date' && (
+                          sortDirection === 'asc' 
+                            ? <ArrowUp size={14} className="ml-1" /> 
+                            : <ArrowDown size={14} className="ml-1" />
                         )}
-                        {(order.status === 'pending' || order.status === 'processing') && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
-                            onClick={() => updateOrderStatus(order.id, 'cancelled')}
-                          >
-                            <X size={16} className="mr-1" />
-                            Cancel
-                          </Button>
+                      </button>
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">Status</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort('total')}
+                      >
+                        Total
+                        {sortColumn === 'total' && (
+                          sortDirection === 'asc' 
+                            ? <ArrowUp size={14} className="ml-1" /> 
+                            : <ArrowDown size={14} className="ml-1" />
                         )}
-                      </div>
-                    </td>
+                      </button>
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">
+                      <button 
+                        className="flex items-center"
+                        onClick={() => handleSort('items')}
+                      >
+                        Items
+                        {sortColumn === 'items' && (
+                          sortDirection === 'asc' 
+                            ? <ArrowUp size={14} className="ml-1" /> 
+                            : <ArrowDown size={14} className="ml-1" />
+                        )}
+                      </button>
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-mosaic-green-dark">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-mosaic-earth-light">
+                  {filteredOrders.map((order, index) => (
+                    <tr 
+                      key={order.id}
+                      className="hover:bg-gray-50 transition-colors animate-fade-in"
+                      style={{ animationDelay: `${index * 0.05 + 0.2}s` }}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap font-medium">{order.id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{order.customerName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 rounded-full text-xs ${statusColors[order.status].bg} ${statusColors[order.status].text}`}>
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">${order.total.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{order.items}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="border-mosaic-green text-mosaic-green hover:bg-mosaic-green hover:text-white transition-colors"
+                            onClick={() => {
+                              setViewingOrder(order);
+                              setIsViewOrderOpen(true);
+                            }}
+                          >
+                            <Eye size={16} className="mr-1" />
+                            View
+                          </Button>
+                          {order.status === 'pending' && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors"
+                              onClick={() => updateOrderStatus(order.id, 'processing')}
+                            >
+                              <Check size={16} className="mr-1" />
+                              Process
+                            </Button>
+                          )}
+                          {order.status === 'processing' && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white transition-colors"
+                              onClick={() => updateOrderStatus(order.id, 'shipped')}
+                            >
+                              <Check size={16} className="mr-1" />
+                              Ship
+                            </Button>
+                          )}
+                          {order.status === 'shipped' && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white transition-colors"
+                              onClick={() => updateOrderStatus(order.id, 'delivered')}
+                            >
+                              <Check size={16} className="mr-1" />
+                              Deliver
+                            </Button>
+                          )}
+                          {(order.status === 'pending' || order.status === 'processing') && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+                              onClick={() => updateOrderStatus(order.id, 'cancelled')}
+                            >
+                              <X size={16} className="mr-1" />
+                              Cancel
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
           
-          {filteredOrders.length === 0 && (
+          {!isLoading && filteredOrders.length === 0 && (
             <div className="py-12 text-center text-gray-500">
               No orders found. Try adjusting your search or filter.
             </div>
@@ -445,7 +486,7 @@ const Orders = () => {
                       <TableRow key={index}>
                         <TableCell>{product.name}</TableCell>
                         <TableCell>{product.variation || 'N/A'}</TableCell>
-                        <TableCell>{product.weight}</TableCell>
+                        <TableCell>{product.weight || 'N/A'}</TableCell>
                         <TableCell>{product.quantity}</TableCell>
                         <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
                         <TableCell className="text-right">${(product.price * product.quantity).toFixed(2)}</TableCell>

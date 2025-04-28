@@ -83,14 +83,12 @@ const Checkout = () => {
   const total = subtotal + deliveryFee;
 
   useEffect(() => {
-    // Redirect to cart if there are no items
     if (cartItems.length === 0) {
       navigate('/cart');
     }
   }, [cartItems.length, navigate]);
 
   useEffect(() => {
-    // Redirect to login if not authenticated
     if (!isAuthenticated) {
       sessionStorage.setItem('redirectAfterLogin', '/checkout');
       toast({
@@ -102,7 +100,6 @@ const Checkout = () => {
   }, [isAuthenticated, navigate, toast]);
 
   useEffect(() => {
-    // Simple form validation
     const { fullName, email, phone, address, city, state, zipCode } = shippingInfo;
     setIsFormValid(Boolean(fullName && email && phone && address && city && state && zipCode));
   }, [shippingInfo]);
@@ -122,7 +119,6 @@ const Checkout = () => {
       return;
     }
     
-    // Save shipping info and delivery method to session storage
     const checkoutData = {
       shippingInfo,
       deliveryMethod: deliveryMethods.find(method => method.id === selectedDelivery),
@@ -144,7 +140,6 @@ const Checkout = () => {
       <div className="flex-1 bg-gray-50">
         <div className="container mx-auto py-12 px-4">
           <div className="max-w-6xl mx-auto">
-            {/* Checkout Steps */}
             <div className="mb-8 animate-fade-in">
               <div className="flex justify-center items-center space-x-4">
                 <div className="flex items-center">
@@ -175,7 +170,6 @@ const Checkout = () => {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Shipping Information */}
               <div className="lg:col-span-2 space-y-6">
                 <div className="bg-white p-6 rounded-lg shadow-sm animate-fade-in" style={{ animationDelay: "0.1s" }}>
                   <h2 className="text-2xl font-serif font-bold text-mosaic-green-dark mb-6">
@@ -353,7 +347,6 @@ const Checkout = () => {
                 </div>
               </div>
               
-              {/* Order Summary */}
               <div className="animate-fade-in" style={{ animationDelay: "0.4s" }}>
                 <div className="bg-white p-6 rounded-lg shadow-sm sticky top-6">
                   <h2 className="text-2xl font-serif font-bold text-mosaic-green-dark mb-6">
