@@ -2,119 +2,83 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Leaf, Star, Plus, ShoppingCart, Heart, Eye } from 'lucide-react';
+import { Leaf, Star, ShoppingCart, Heart, Eye } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
-import { Product } from '../types/products';
+import { Product, Category } from '../types/products';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
-const products: Product[] = [
-  {
-    id: "1",
-    name: "Organic Cashews",
-    description: "Ethically grown and harvested cashews from our farms in the Eastern Afram Plains.",
-    price: 12.99,
-    image_url: "https://images.unsplash.com/photo-1563412580953-7f9e99209336?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzaGV3c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60",
-    category_id: null,
-    inventory_count: 100,
-    is_featured: true,
-    image: "https://images.unsplash.com/photo-1563412580953-7f9e99209336?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzaGV3c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=600&q=60",
-    category_name: "Nuts",
-    category: { name: "Nuts" },
-    variations: [
-      {
-        name: "Type",
-        options: ["Raw", "Roasted", "Salted"]
-      }
-    ],
-    weight: {
-      options: [250, 500, 1000],
-      unit: "g"
-    }
-  },
-  {
-    id: "2",
-    name: "Tiger Nut Flour",
-    description: "Our signature product, perfect for gluten-free baking and adding nutritional value to smoothies and recipes.",
-    price: 9.99,
-    image_url: "https://images.unsplash.com/photo-1614961233913-a5113a4a34ed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmxvdXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    category_id: null,
-    inventory_count: 100,
-    is_featured: true,
-    image: "https://images.unsplash.com/photo-1614961233913-a5113a4a34ed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmxvdXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    category_name: "Flour",
-    category: { name: "Flour" },
-    variations: [
-      {
-        name: "Processing",
-        options: ["Fine Ground", "Coarse Ground"]
-      }
-    ],
-    weight: {
-      options: [500, 1000, 2000],
-      unit: "g"
-    }
-  },
-  {
-    id: "3",
-    name: "Tiger Nut Milk",
-    description: "Creamy plant-based milk alternative rich in nutrients and natural sweetness.",
-    price: 6.99,
-    image_url: "https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGxhbnQlMjBtaWxrfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
-    category_id: null,
-    inventory_count: 100,
-    is_featured: true,
-    image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGxhbnQlMjBtaWxrfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
-    category_name: "Beverages",
-    category: { name: "Beverages" },
-    variations: [
-      {
-        name: "Flavor",
-        options: ["Original", "Vanilla", "Chocolate"]
-      }
-    ],
-    weight: {
-      options: [500, 1000],
-      unit: "ml"
-    }
-  },
-  {
-    id: "4",
-    name: "Tiger Nut Dessert",
-    description: "Frozen treats featuring the unique flavor and nutrition of tiger nuts.",
-    price: 8.99,
-    image_url: "https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGljZSUyMGNyZWFtfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
-    category_id: null,
-    inventory_count: 100,
-    is_featured: true,
-    image: "https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGljZSUyMGNyZWFtfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60",
-    category_name: "Dessert",
-    category: { name: "Dessert" },
-    variations: [
-      {
-        name: "Flavor",
-        options: ["Classic", "Berry Mix", "Chocolate"]
-      }
-    ],
-    weight: {
-      options: [250, 500],
-      unit: "g"
-    }
+const fetchProducts = async (): Promise<Product[]> => {
+  const { data: products, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("Error fetching products:", error);
+    throw error;
   }
-];
+
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('*');
+
+  const { data: weights } = await supabase
+    .from('product_weights')
+    .select('*');
+
+  const { data: variations } = await supabase
+    .from('product_variations')
+    .select('*');
+
+  return products.map(product => {
+    const category = categories?.find(c => c.id === product.category_id);
+    const productWeights = weights?.filter(w => w.product_id === product.id) || [];
+    const productVariations = variations?.filter(v => v.product_id === product.id) || [];
+
+    return {
+      ...product,
+      image: product.image_url,
+      category: category || { name: 'Unknown' },
+      category_name: category?.name || 'Unknown',
+      weights: productWeights,
+      variations: productVariations,
+      weight: productWeights.length > 0 
+        ? { weight: productWeights[0].weight, unit: productWeights[0].unit }
+        : { options: [0], unit: 'g' },
+      weight_options: {
+        options: productWeights.map(w => w.weight),
+        unit: productWeights.length > 0 ? productWeights[0].unit : 'g'
+      },
+      variation_options: productVariations.map(v => ({
+        name: v.name,
+        options: Object.values(v.options).flat()
+      }))
+    };
+  });
+};
 
 const Products = () => {
   const { addToCart, addToWishlist, isInWishlist } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [visibleItems, setVisibleItems] = useState<number[]>([]);
+  const [visibleItems, setVisibleItems] = useState<string[]>([]);
+
+  const { data: products = [], isLoading, error } = useQuery({
+    queryKey: ['products'],
+    queryFn: fetchProducts
+  });
+
+  const featuredProducts = products.filter(product => product.is_featured === true);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            const id = parseInt(entry.target.id.split('-')[1]);
+            const id = entry.target.id.split('-')[1];
             setVisibleItems(prev => [...prev, id]);
           }
         });
@@ -131,7 +95,7 @@ const Products = () => {
         observer.unobserve(item);
       });
     };
-  }, []);
+  }, [products]);
 
   const handleAddToCart = (product: Product, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -155,7 +119,31 @@ const Products = () => {
     navigate(`/product/${productId}`);
   };
 
-  const isVisible = (id: number) => visibleItems.includes(id);
+  const isVisible = (id: string) => visibleItems.includes(id);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <p className="text-lg">Loading products...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <p className="text-lg text-red-500">Error loading products. Please try again later.</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -177,71 +165,73 @@ const Products = () => {
         <div className="container mx-auto max-w-6xl">
           <h2 className="section-heading text-center mb-12 animate-fade-in">Nutri-Rich Harvests</h2>
           
-          <div className="mb-16">
-            <h3 className="text-2xl font-serif font-bold text-mosaic-green-dark mb-8 text-center animate-fade-in">
-              Featured Products
-            </h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {products.map((product, index) => (
-                <div 
-                  id={`product-${product.id}`}
-                  key={product.id} 
-                  className={`product-item bg-white rounded-lg border border-mosaic-earth overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 ${
-                    isVisible(product.id) ? 'animate-scale-in opacity-100' : 'opacity-0'
-                  }`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                  onClick={() => handleViewDetails(product.id)}
-                >
-                  <div className="h-48 overflow-hidden relative group">
-                    <img 
-                      src={product.image} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
-                        onClick={(e) => handleViewDetails(product.id)}
-                      >
-                        <Eye size={18} />
-                      </button>
-                      <button 
-                        className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
+          {featuredProducts.length > 0 && (
+            <div className="mb-16">
+              <h3 className="text-2xl font-serif font-bold text-mosaic-green-dark mb-8 text-center animate-fade-in">
+                Featured Products
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                {featuredProducts.map((product, index) => (
+                  <div 
+                    id={`product-${product.id}`}
+                    key={product.id} 
+                    className={`product-item bg-white rounded-lg border border-mosaic-earth overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 ${
+                      isVisible(product.id) ? 'animate-scale-in opacity-100' : 'opacity-0'
+                    }`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                    onClick={() => handleViewDetails(product.id)}
+                  >
+                    <div className="h-48 overflow-hidden relative group">
+                      <img 
+                        src={product.image_url || '/placeholder.svg'} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
+                          onClick={(e) => handleViewDetails(product.id)}
+                        >
+                          <Eye size={18} />
+                        </button>
+                        <button 
+                          className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
+                          onClick={(e) => handleAddToCart(product, e)}
+                        >
+                          <ShoppingCart size={18} />
+                        </button>
+                        <button 
+                          className={`bg-white p-2 rounded-full mx-1 transition-colors ${
+                            isInWishlist(product.id)
+                              ? 'text-red-500'
+                              : 'text-mosaic-green-dark hover:bg-mosaic-green hover:text-white'
+                          }`}
+                          onClick={(e) => handleAddToWishlist(product, e)}
+                        >
+                          <Heart size={18} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-serif font-bold text-mosaic-green-dark">{product.name}</h4>
+                        <span className="text-mosaic-green font-bold">${product.price.toFixed(2)}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{product.description}</p>
+                      <Button
                         onClick={(e) => handleAddToCart(product, e)}
+                        className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
                       >
                         <ShoppingCart size={18} />
-                      </button>
-                      <button 
-                        className={`bg-white p-2 rounded-full mx-1 transition-colors ${
-                          isInWishlist(product.id)
-                            ? 'text-red-500'
-                            : 'text-mosaic-green-dark hover:bg-mosaic-green hover:text-white'
-                        }`}
-                        onClick={(e) => handleAddToWishlist(product, e)}
-                      >
-                        <Heart size={18} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
-                      </button>
+                        Add to Cart
+                      </Button>
                     </div>
                   </div>
-                  <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-serif font-bold text-mosaic-green-dark">{product.name}</h4>
-                      <span className="text-mosaic-green font-bold">${product.price.toFixed(2)}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{product.description}</p>
-                    <Button
-                      onClick={(e) => handleAddToCart(product, e)}
-                      className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
-                    >
-                      <ShoppingCart size={18} />
-                      Add to Cart
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
           
           <div className="mb-20">
             <div className="flex items-center mb-6">

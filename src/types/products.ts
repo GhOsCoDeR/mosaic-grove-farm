@@ -46,9 +46,11 @@ export interface Product {
     unit: string;
   } | { options: number[]; unit: string };
   image?: string; // Alias for image_url for backward compatibility
-
-  // Additional properties for compatibility
   category_name?: string; // Added for old code using product.category directly
+  
+  // Backward compatibility with old code
+  weight_options?: { options: number[]; unit: string };
+  variation_options?: { name: string; options: string[] }[];
 }
 
 // Helper function to convert between numeric and string IDs

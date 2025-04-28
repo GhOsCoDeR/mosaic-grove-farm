@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -76,7 +75,6 @@ const Orders = () => {
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      // Fetch orders from Supabase
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select(`
@@ -95,10 +93,8 @@ const Orders = () => {
         throw ordersError;
       }
 
-      // Fetch order items for each order
       const formattedOrders: Order[] = await Promise.all(
         (ordersData || []).map(async (order) => {
-          // Fetch order items for this order
           const { data: orderItems, error: itemsError } = await supabase
             .from('order_items')
             .select(`
@@ -116,7 +112,6 @@ const Orders = () => {
             return null;
           }
 
-          // Format order items
           const products = orderItems.map(item => ({
             name: item.products?.name || 'Unknown Product',
             quantity: item.quantity,
@@ -125,12 +120,10 @@ const Orders = () => {
             weight: item.selected_weight ? `${item.selected_weight}` : undefined,
           }));
 
-          // Parse shipping address
           const shippingAddress = order.shipping_address ? 
             typeof order.shipping_address === 'string' ? 
               JSON.parse(order.shipping_address) : order.shipping_address : {};
           
-          // Format address string
           const addressString = shippingAddress ? 
             `${shippingAddress.street || ''}, ${shippingAddress.city || ''}, ${shippingAddress.state || ''} ${shippingAddress.zipCode || ''}` : 
             'No address provided';
@@ -150,7 +143,6 @@ const Orders = () => {
         })
       );
 
-      // Filter out any null orders (from errors)
       setOrders(formattedOrders.filter(Boolean) as Order[]);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -164,10 +156,8 @@ const Orders = () => {
     }
   };
 
-  // Get unique statuses from orders
   const statuses = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'];
 
-  // Filter and sort orders
   const filteredOrders = orders
     .filter(order => 
       (order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -199,7 +189,6 @@ const Orders = () => {
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
-      // Update order status in the database
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
@@ -209,7 +198,6 @@ const Orders = () => {
         throw error;
       }
 
-      // Update the local state
       setOrders(orders.map(order => 
         order.id === orderId ? { ...order, status: newStatus } : order
       ));
