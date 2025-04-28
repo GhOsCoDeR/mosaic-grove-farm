@@ -10,11 +10,11 @@ const About = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      {/* Hero Section with new component */}
+      {/* Hero Section with updated image */}
       <HeroSection
         title="About Mosaic Grove"
         subtitle="Our mission is to cultivate sustainable agriculture and empower local communities in Ghana"
-        backgroundImage="/lovable-uploads/c22771de-87f4-4515-8f9a-0327322baa53.png"
+        backgroundImage="/lovable-uploads/5030a9ef-4b97-42e5-a600-b00599a1beb7.png"
         overlayClass="bg-mosaic-green-dark/60"
       />
       
