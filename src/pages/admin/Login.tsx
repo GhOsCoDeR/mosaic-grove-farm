@@ -118,15 +118,17 @@ const AdminLogin = () => {
                   className="pl-10 pr-10"
                   placeholder="Enter your password"
                 />
-                <div 
+                <button 
+                  type="button"
                   className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer" 
                   onClick={togglePasswordVisibility}
+                  tabIndex={-1}
                 >
                   {showPassword ? 
                     <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" /> :
                     <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                   }
-                </div>
+                </button>
               </div>
             </div>
             

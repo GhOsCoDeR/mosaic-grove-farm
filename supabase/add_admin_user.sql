@@ -1,6 +1,6 @@
 
--- This script adds an admin user account for testing purposes
--- First, add a user in the auth schema
+-- This is a script to create a new admin user and add them to the admin_roles table
+-- First, create the user if they don't exist
 INSERT INTO auth.users (
   instance_id,
   id,
@@ -9,42 +9,25 @@ INSERT INTO auth.users (
   email,
   encrypted_password,
   email_confirmed_at,
-  last_sign_in_at,
-  raw_app_meta_data,
-  raw_user_meta_data,
-  is_super_admin,
   created_at,
   updated_at
 )
 VALUES (
   '00000000-0000-0000-0000-000000000000',
-  gen_random_uuid(), -- Generate a new UUID for the user
+  gen_random_uuid(),
   'authenticated',
   'authenticated',
   'admin@mosaicgrove.com',
-  crypt('admin123', gen_salt('bf')), -- Password is 'admin123'
+  crypt('admin123', gen_salt('bf')),
   now(),
-  now(),
-  '{"provider": "email", "providers": ["email"]}',
-  '{"name": "Admin User"}',
-  FALSE,
   now(),
   now()
-);
+)
+ON CONFLICT (email) DO NOTHING;
 
--- Then, add the user to the admin_roles table
--- We need to get the user ID first
-DO $$
-DECLARE
-  admin_user_id UUID;
-BEGIN
-  SELECT id INTO admin_user_id FROM auth.users WHERE email = 'admin@mosaicgrove.com';
-
-  -- Add admin role
-  INSERT INTO public.admin_roles (user_id, role)
-  VALUES (admin_user_id, 'super-admin');
-
-  -- Create a profile for this user
-  INSERT INTO public.profiles (id, name, email)
-  VALUES (admin_user_id, 'Admin User', 'admin@mosaicgrove.com');
-END $$;
+-- Then, add the admin role if it doesn't exist
+INSERT INTO public.admin_roles (user_id, role)
+SELECT id, 'super-admin'::text
+FROM auth.users
+WHERE email = 'admin@mosaicgrove.com'
+ON CONFLICT (user_id) DO NOTHING;

@@ -103,15 +103,17 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <div 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer" 
+                <button 
+                  type="button"
+                  className="password-toggle-btn" 
                   onClick={togglePasswordVisibility}
+                  tabIndex={-1}
                 >
                   {showPassword ? 
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" /> :
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    <EyeOff className="h-5 w-5" /> :
+                    <Eye className="h-5 w-5" />
                   }
-                </div>
+                </button>
               </div>
             </div>
 

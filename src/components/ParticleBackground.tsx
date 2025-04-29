@@ -9,6 +9,8 @@ interface Particle {
   speedX: number;
   speedY: number;
   opacity: number;
+  pulseSpeed: number;
+  pulseDirection: number;
 }
 
 interface ParticleBackgroundProps {
@@ -45,11 +47,13 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
         particlesRef.current.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          radius: Math.random() * 3 + 1,
+          radius: Math.random() * 2 + 1,
           color: particleColor,
           speedX: (Math.random() - 0.5) * particleSpeed,
           speedY: (Math.random() - 0.5) * particleSpeed,
-          opacity: Math.random() * 0.5 + 0.2
+          opacity: Math.random() * 0.5 + 0.2,
+          pulseSpeed: Math.random() * 0.01 + 0.005,
+          pulseDirection: Math.random() > 0.5 ? 1 : -1
         });
       }
     };
@@ -63,6 +67,16 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
         // Move particle
         particle.x += particle.speedX;
         particle.y += particle.speedY;
+        
+        // Pulse opacity for a subtle glowing effect
+        particle.opacity += particle.pulseSpeed * particle.pulseDirection;
+        
+        // Change pulse direction when reaching opacity thresholds
+        if (particle.opacity >= 0.7) {
+          particle.pulseDirection = -1;
+        } else if (particle.opacity <= 0.2) {
+          particle.pulseDirection = 1;
+        }
         
         // Wrap around canvas edges
         if (particle.x < 0) particle.x = width;
@@ -84,9 +98,9 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
           const dy = particlesRef.current[i].y - particlesRef.current[j].y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
-          if (distance < 100) {
+          if (distance < 150) {
             context.beginPath();
-            context.strokeStyle = `rgba(${hexToRgb(particleColor)}, ${0.2 * (1 - distance / 100)})`;
+            context.strokeStyle = `rgba(${hexToRgb(particleColor)}, ${0.2 * (1 - distance / 150)})`;
             context.lineWidth = 0.5;
             context.moveTo(particlesRef.current[i].x, particlesRef.current[i].y);
             context.lineTo(particlesRef.current[j].x, particlesRef.current[j].y);

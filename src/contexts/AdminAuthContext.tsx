@@ -115,6 +115,8 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
           setAdmin(null);
           console.log("No session found");
         }
+        
+        setIsLoading(false);
       }
     );
 
@@ -138,6 +140,8 @@ export const AdminAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
           });
           
           console.log("Admin user set from existing session");
+        } else {
+          setAdmin(null);
         }
       }
       

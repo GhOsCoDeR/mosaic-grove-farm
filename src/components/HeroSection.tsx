@@ -24,10 +24,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   height = "py-32", 
   children,
   textColor = "text-white",
-  overlayClass = "bg-black/30",
+  overlayClass = "bg-black/50",
   particleColor = "#ffffff",
-  particleCount = 30,
-  particleSpeed = 0.5
+  particleCount = 40,
+  particleSpeed = 0.7
 }) => {
   return (
     <section 
@@ -44,7 +44,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       {/* Overlay for better text readability */}
       {backgroundImage && <div className={`absolute inset-0 ${overlayClass}`}></div>}
       
-      {/* Particles effect */}
+      {/* Particles effect with increased density and speed */}
       <ParticleBackground 
         particleColor={particleColor}
         particleCount={particleCount}
@@ -53,11 +53,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       
       {/* Content */}
       <div className="container relative z-10 mx-auto text-center max-w-4xl animate-fade-in">
-        <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4">
+        <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 drop-shadow-lg">
           {title}
         </h1>
         {subtitle && (
-          <p className="text-xl md:text-2xl mb-8">
+          <p className="text-xl md:text-2xl mb-8 drop-shadow-md">
             {subtitle}
           </p>
         )}

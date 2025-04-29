@@ -142,7 +142,7 @@ const Navbar: React.FC = () => {
               <Heart size={22} />
             </Link>
             
-            <Link to="/cart" className="relative text-mosaic-green-dark hover:text-mosaic-green transition-colors">
+            <Link to="/cart" className="relative text-mosaic-green-dark hover:text-mosaic-green transition-colors cart-icon">
               <ShoppingCart size={22} />
               {cartItemsCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-mosaic-green text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-scale-in">
@@ -158,7 +158,7 @@ const Navbar: React.FC = () => {
               <Heart size={22} />
             </Link>
             
-            <Link to="/cart" className="relative text-mosaic-green-dark hover:text-mosaic-green transition-colors">
+            <Link to="/cart" className="relative text-mosaic-green-dark hover:text-mosaic-green transition-colors cart-icon">
               <ShoppingCart size={22} />
               {cartItemsCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-mosaic-green text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-scale-in">
