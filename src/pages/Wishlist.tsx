@@ -74,9 +74,7 @@ const Wishlist = () => {
                         {item.name}
                       </Link>
                       <p className="text-sm text-gray-600">
-                        {(item.category_name) || 
-                         (item.category && typeof item.category === 'object' && 'name' in item.category ? 
-                           item.category.name : 'Uncategorized')}
+                        {"Uncategorized"}
                       </p>
                     </div>
                   </div>
