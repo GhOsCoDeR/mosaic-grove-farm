@@ -44,6 +44,7 @@ export interface Product {
   weight?: {
     weight: number;
     unit: string;
+    options?: number[];
   } | { options: number[]; unit: string };
   image?: string; // Alias for image_url for backward compatibility
   category_name?: string; // Added for old code using product.category directly

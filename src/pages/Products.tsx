@@ -33,10 +33,33 @@ const fetchProducts = async (): Promise<Product[]> => {
     .from('product_variations')
     .select('*');
 
+  // Transform the data to match our Product interface
   return products.map(product => {
     const category = categories?.find(c => c.id === product.category_id);
     const productWeights = weights?.filter(w => w.product_id === product.id) || [];
     const productVariations = variations?.filter(v => v.product_id === product.id) || [];
+
+    // Process variations to ensure options are properly formatted
+    const formattedVariations = productVariations.map(v => {
+      let parsedOptions: Record<string, string[]> = {};
+      if (typeof v.options === 'string') {
+        try {
+          const parsed = JSON.parse(v.options);
+          if (parsed.options && Array.isArray(parsed.options)) {
+            parsedOptions = { options: parsed.options };
+          }
+        } catch (e) {
+          console.error("Failed to parse variation options:", e);
+        }
+      } else if (typeof v.options === 'object') {
+        parsedOptions = v.options as Record<string, string[]>;
+      }
+
+      return {
+        ...v,
+        options: parsedOptions
+      };
+    });
 
     return {
       ...product,
@@ -44,19 +67,39 @@ const fetchProducts = async (): Promise<Product[]> => {
       category: category || { name: 'Unknown' },
       category_name: category?.name || 'Unknown',
       weights: productWeights,
-      variations: productVariations,
+      variations: formattedVariations,
       weight: productWeights.length > 0 
-        ? { weight: productWeights[0].weight, unit: productWeights[0].unit }
+        ? { 
+            weight: productWeights[0].weight, 
+            unit: productWeights[0].unit,
+            options: productWeights.map(w => w.weight)
+          }
         : { options: [0], unit: 'g' },
       weight_options: {
         options: productWeights.map(w => w.weight),
         unit: productWeights.length > 0 ? productWeights[0].unit : 'g'
       },
-      variation_options: productVariations.map(v => ({
-        name: v.name,
-        options: Object.values(v.options).flat()
-      }))
-    };
+      variation_options: productVariations.map(v => {
+        let options: string[] = [];
+        if (typeof v.options === 'string') {
+          try {
+            const parsed = JSON.parse(v.options);
+            if (parsed.options && Array.isArray(parsed.options)) {
+              options = parsed.options;
+            }
+          } catch (e) {
+            console.error("Failed to parse variation options:", e);
+          }
+        } else if (typeof v.options === 'object' && v.options.options) {
+          options = v.options.options as string[];
+        }
+        
+        return {
+          name: v.name,
+          options: options
+        };
+      })
+    } as Product;
   });
 };
 
@@ -115,6 +158,7 @@ const Products = () => {
     });
   };
   
+  // Fix the handleViewDetails function to accept string IDs
   const handleViewDetails = (productId: string) => {
     navigate(`/product/${productId}`);
   };
@@ -345,7 +389,7 @@ const Products = () => {
                     <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
-                        onClick={() => handleViewDetails(2)}
+                        onClick={() => handleViewDetails("2")}
                       >
                         <Eye size={18} />
                       </button>

@@ -84,14 +84,18 @@ const Orders = () => {
           total_amount, 
           shipping_address, 
           payment_status, 
-          user_id,
-          profiles(name, email, phone)
+          user_id
         `)
         .order('created_at', { ascending: false });
 
       if (ordersError) {
         throw ordersError;
       }
+
+      // Fetch profiles separately to avoid relation errors
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, email, phone');
 
       const formattedOrders: Order[] = await Promise.all(
         (ordersData || []).map(async (order) => {
@@ -128,15 +132,18 @@ const Orders = () => {
             `${shippingAddress.street || ''}, ${shippingAddress.city || ''}, ${shippingAddress.state || ''} ${shippingAddress.zipCode || ''}` : 
             'No address provided';
 
+          // Find user profile by user_id
+          const userProfile = profiles?.find(p => p.id === order.user_id);
+
           return {
             id: order.id,
-            customerName: order.profiles?.name || 'Unknown Customer',
+            customerName: userProfile?.name || 'Unknown Customer',
             date: new Date(order.created_at).toLocaleDateString(),
             status: order.status as Order['status'],
             total: order.total_amount,
             items: orderItems.length,
-            email: order.profiles?.email || 'No email',
-            phone: order.profiles?.phone || 'No phone',
+            email: userProfile?.email || 'No email',
+            phone: userProfile?.phone || 'No phone',
             address: addressString,
             products
           };

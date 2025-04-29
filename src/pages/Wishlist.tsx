@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -72,7 +73,11 @@ const Wishlist = () => {
                       <Link to={`/product/${item.id}`} className="font-medium text-mosaic-green-dark hover:text-mosaic-green transition-colors">
                         {item.name}
                       </Link>
-                      <p className="text-sm text-gray-600">{item.category_name || (item.category && 'name' in item.category ? item.category.name : 'Uncategorized')}</p>
+                      <p className="text-sm text-gray-600">
+                        {item.category_name || 
+                         (item.category && typeof item.category === 'object' && 'name' in item.category ? 
+                           item.category.name : 'Uncategorized')}
+                      </p>
                     </div>
                   </div>
                   <div className="text-center font-medium">${item.price.toFixed(2)}</div>

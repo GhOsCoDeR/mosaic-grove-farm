@@ -149,12 +149,17 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariation, setSelectedVariation] = useState<Record<string, string>>({});
   const [selectedWeight, setSelectedWeight] = useState<number | undefined>(
-    product?.weight?.options[0]
+    product?.weight && 'options' in product.weight ? product.weight.options[0] : 
+    product?.weight && 'weight' in product.weight ? product.weight.weight : undefined
   );
   const [activeTab, setActiveTab] = useState<'details' | 'reviews' | 'shipping'>('details');
 
   const increasedPrice = selectedWeight && product 
-    ? product.price * (selectedWeight / (product.weight?.options[0] || 1)) 
+    ? product.price * (selectedWeight / (
+        ('options' in product.weight! && product.weight.options[0]) || 
+        ('weight' in product.weight! && product.weight.weight) || 
+        1
+      )) 
     : product?.price;
 
   if (!product) {
@@ -220,7 +225,7 @@ const ProductDetail = () => {
             {/* Product Image */}
             <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden animate-fade-in">
               <img 
-                src={product.image} 
+                src={product.image_url || product.image} 
                 alt={product.name} 
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
               />
@@ -228,7 +233,9 @@ const ProductDetail = () => {
             
             {/* Product Details */}
             <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
-              <div className="mb-2 text-mosaic-green">{product.category}</div>
+              <div className="mb-2 text-mosaic-green">
+                {product.category_name || (product.category && 'name' in product.category ? product.category.name : 'Uncategorized')}
+              </div>
               <h1 className="text-3xl font-serif font-bold text-mosaic-green-dark mb-2">
                 {product.name}
               </h1>
@@ -256,7 +263,7 @@ const ProductDetail = () => {
                   <div>
                     <h3 className="font-semibold mb-2">Weight</h3>
                     <div className="flex flex-wrap gap-2">
-                      {product.weight.options.map((weight) => (
+                      {('options' in product.weight ? product.weight.options : [('weight' in product.weight ? product.weight.weight : 0)]).map((weight) => (
                         <button
                           key={weight}
                           onClick={() => setSelectedWeight(weight)}
@@ -421,15 +428,20 @@ const ProductDetail = () => {
                 
                 <h3>How to Use</h3>
                 <p>
-                  {product.category === 'Nuts' && 'Enjoy as a healthy snack, add to salads, or use in your baking recipes.'}
-                  {product.category === 'Flour' && 'Perfect for gluten-free baking. Use it for making bread, cookies, pancakes or add to smoothies for extra nutrition.'}
-                  {product.category === 'Beverages' && 'Enjoy chilled, use in smoothies, or as a dairy alternative in your coffee and cereal.'}
-                  {product.category === 'Dessert' && 'Ready to enjoy! Simply thaw for a few minutes before serving if frozen.'}
+                  {product.category_name === 'Nuts' || (product.category && 'name' in product.category && product.category.name === 'Nuts') && 
+                    'Enjoy as a healthy snack, add to salads, or use in your baking recipes.'}
+                  {product.category_name === 'Flour' || (product.category && 'name' in product.category && product.category.name === 'Flour') && 
+                    'Perfect for gluten-free baking. Use it for making bread, cookies, pancakes or add to smoothies for extra nutrition.'}
+                  {product.category_name === 'Beverages' || (product.category && 'name' in product.category && product.category.name === 'Beverages') && 
+                    'Enjoy chilled, use in smoothies, or as a dairy alternative in your coffee and cereal.'}
+                  {product.category_name === 'Dessert' || (product.category && 'name' in product.category && product.category.name === 'Dessert') && 
+                    'Ready to enjoy! Simply thaw for a few minutes before serving if frozen.'}
                 </p>
                 
                 <h3>Storage</h3>
                 <p>
-                  {product.category === 'Nuts' || product.category === 'Flour' 
+                  {(product.category_name === 'Nuts' || (product.category && 'name' in product.category && product.category.name === 'Nuts')) || 
+                   (product.category_name === 'Flour' || (product.category && 'name' in product.category && product.category.name === 'Flour'))
                     ? 'Store in a cool, dry place. Once opened, keep in an airtight container.' 
                     : 'Keep refrigerated at all times. Consume within 7 days of opening.'}
                 </p>
