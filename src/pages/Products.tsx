@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Leaf, Star, ShoppingCart, Heart, Eye } from 'lucide-react';
+import { Leaf, Star, ShoppingCart, Heart, Eye, Clock, Tag, Zap } from 'lucide-react';
 import { useCart } from '../hooks/useCart';
 import { Product, Category } from '../types/products';
 import { Button } from '@/components/ui/button';
@@ -42,16 +43,17 @@ const fetchProducts = async (): Promise<Product[]> => {
     // Process variations to ensure options are properly formatted
     const formattedVariations = productVariations.map(v => {
       let parsedOptions: Record<string, string[]> = {};
+      
       if (typeof v.options === 'string') {
         try {
           const parsed = JSON.parse(v.options);
-          if (parsed.options && Array.isArray(parsed.options)) {
-            parsedOptions = { options: parsed.options };
+          if (parsed && typeof parsed === 'object') {
+            parsedOptions = parsed;
           }
         } catch (e) {
           console.error("Failed to parse variation options:", e);
         }
-      } else if (typeof v.options === 'object') {
+      } else if (v.options && typeof v.options === 'object') {
         parsedOptions = v.options as Record<string, string[]>;
       }
 
@@ -81,17 +83,15 @@ const fetchProducts = async (): Promise<Product[]> => {
       },
       variation_options: productVariations.map(v => {
         let options: string[] = [];
-        if (typeof v.options === 'string') {
-          try {
-            const parsed = JSON.parse(v.options);
-            if (parsed.options && Array.isArray(parsed.options)) {
-              options = parsed.options;
-            }
-          } catch (e) {
-            console.error("Failed to parse variation options:", e);
+        
+        if (typeof v.options === 'object' && v.options) {
+          if (Array.isArray(v.options)) {
+            options = v.options.map(String);
+          } else if ('options' in v.options) {
+            options = Array.isArray(v.options.options) 
+              ? v.options.options.map(String) 
+              : [];
           }
-        } else if (typeof v.options === 'object' && v.options.options) {
-          options = v.options.options as string[];
         }
         
         return {
@@ -103,8 +103,150 @@ const fetchProducts = async (): Promise<Product[]> => {
   });
 };
 
-const Products = () => {
+const ProductCard = ({ product, isVisible }: { product: Product, isVisible: boolean }) => {
   const { addToCart, addToWishlist, isInWishlist } = useCart();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    addToCart(product);
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
+  
+  const handleAddToWishlist = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    addToWishlist(product);
+    toast({
+      title: "Added to Wishlist",
+      description: `${product.name} has been added to your wishlist.`,
+    });
+  };
+  
+  const handleViewDetails = () => {
+    navigate(`/product/${product.id}`);
+  };
+
+  return (
+    <div 
+      className={`product-item bg-white rounded-lg border border-mosaic-earth overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 ${
+        isVisible ? 'animate-scale-in opacity-100' : 'opacity-0'
+      }`}
+      onClick={handleViewDetails}
+    >
+      <div className="h-48 overflow-hidden relative group">
+        <img 
+          src={product.image_url || '/placeholder.svg'} 
+          alt={product.name} 
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+        {product.is_flash_sale && (
+          <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold flex items-center">
+            <Zap size={14} className="mr-1" /> FLASH SALE
+          </div>
+        )}
+        {product.is_coming_soon && (
+          <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-bold flex items-center">
+            <Clock size={14} className="mr-1" /> COMING SOON
+          </div>
+        )}
+        {product.discount_percent && (
+          <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-md text-xs font-bold flex items-center">
+            <Tag size={14} className="mr-1" /> {product.discount_percent}% OFF
+          </div>
+        )}
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <button 
+            className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
+            onClick={(e) => {e.stopPropagation(); handleViewDetails();}}
+          >
+            <Eye size={18} />
+          </button>
+          <button 
+            className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
+            onClick={(e) => handleAddToCart(e)}
+          >
+            <ShoppingCart size={18} />
+          </button>
+          <button 
+            className={`bg-white p-2 rounded-full mx-1 transition-colors ${
+              isInWishlist(product.id)
+                ? 'text-red-500'
+                : 'text-mosaic-green-dark hover:bg-mosaic-green hover:text-white'
+            }`}
+            onClick={(e) => handleAddToWishlist(e)}
+          >
+            <Heart size={18} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
+          </button>
+        </div>
+      </div>
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <h4 className="font-serif font-bold text-mosaic-green-dark">{product.name}</h4>
+          <div>
+            {product.discount_percent ? (
+              <div className="flex flex-col items-end">
+                <span className="text-red-500 font-bold">${(product.price * (1 - product.discount_percent/100)).toFixed(2)}</span>
+                <span className="text-gray-400 text-xs line-through">${product.price.toFixed(2)}</span>
+              </div>
+            ) : (
+              <span className="text-mosaic-green font-bold">${product.price.toFixed(2)}</span>
+            )}
+          </div>
+        </div>
+        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{product.description}</p>
+        <Button
+          onClick={(e) => handleAddToCart(e)}
+          className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
+          disabled={product.is_coming_soon}
+        >
+          {product.is_coming_soon ? (
+            <>Coming Soon</>
+          ) : (
+            <><ShoppingCart size={18} /> Add to Cart</>
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const ProductSection = ({ 
+  title, 
+  products, 
+  visibleItems 
+}: { 
+  title: string, 
+  products: Product[],
+  visibleItems: string[] 
+}) => {
+  if (!products || products.length === 0) return null;
+  
+  return (
+    <div className="mb-16">
+      <div className="flex items-center mb-6">
+        <div className="bg-mosaic-green h-1 flex-grow"></div>
+        <h3 className="text-2xl font-serif font-bold text-mosaic-green-dark mx-4">{title}</h3>
+        <div className="bg-mosaic-green h-1 flex-grow"></div>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        {products.map((product, index) => (
+          <ProductCard 
+            key={product.id}
+            product={product} 
+            isVisible={visibleItems.includes(product.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const Products = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [visibleItems, setVisibleItems] = useState<string[]>([]);
@@ -115,6 +257,11 @@ const Products = () => {
   });
 
   const featuredProducts = products.filter(product => product.is_featured === true);
+  const flashSaleProducts = products.filter(product => product.is_flash_sale === true);
+  const comingSoonProducts = products.filter(product => product.is_coming_soon === true);
+  const regularProducts = products.filter(product => 
+    !product.is_featured && !product.is_flash_sale && !product.is_coming_soon
+  );
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -139,29 +286,6 @@ const Products = () => {
       });
     };
   }, [products]);
-
-  const handleAddToCart = (product: Product, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    addToCart(product);
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
-    });
-  };
-  
-  const handleAddToWishlist = (product: Product, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    addToWishlist(product);
-    toast({
-      title: "Added to Wishlist",
-      description: `${product.name} has been added to your wishlist.`,
-    });
-  };
-  
-  // Fix the handleViewDetails function to accept string IDs
-  const handleViewDetails = (productId: string) => {
-    navigate(`/product/${productId}`);
-  };
 
   const isVisible = (id: string) => visibleItems.includes(id);
 
@@ -209,78 +333,38 @@ const Products = () => {
         <div className="container mx-auto max-w-6xl">
           <h2 className="section-heading text-center mb-12 animate-fade-in">Nutri-Rich Harvests</h2>
           
-          {featuredProducts.length > 0 && (
-            <div className="mb-16">
-              <h3 className="text-2xl font-serif font-bold text-mosaic-green-dark mb-8 text-center animate-fade-in">
-                Featured Products
-              </h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                {featuredProducts.map((product, index) => (
-                  <div 
-                    id={`product-${product.id}`}
-                    key={product.id} 
-                    className={`product-item bg-white rounded-lg border border-mosaic-earth overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 ${
-                      isVisible(product.id) ? 'animate-scale-in opacity-100' : 'opacity-0'
-                    }`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                    onClick={() => handleViewDetails(product.id)}
-                  >
-                    <div className="h-48 overflow-hidden relative group">
-                      <img 
-                        src={product.image_url || '/placeholder.svg'} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
-                          onClick={(e) => handleViewDetails(product.id)}
-                        >
-                          <Eye size={18} />
-                        </button>
-                        <button 
-                          className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
-                          onClick={(e) => handleAddToCart(product, e)}
-                        >
-                          <ShoppingCart size={18} />
-                        </button>
-                        <button 
-                          className={`bg-white p-2 rounded-full mx-1 transition-colors ${
-                            isInWishlist(product.id)
-                              ? 'text-red-500'
-                              : 'text-mosaic-green-dark hover:bg-mosaic-green hover:text-white'
-                          }`}
-                          onClick={(e) => handleAddToWishlist(product, e)}
-                        >
-                          <Heart size={18} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-serif font-bold text-mosaic-green-dark">{product.name}</h4>
-                        <span className="text-mosaic-green font-bold">${product.price.toFixed(2)}</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{product.description}</p>
-                      <Button
-                        onClick={(e) => handleAddToCart(product, e)}
-                        className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
-                      >
-                        <ShoppingCart size={18} />
-                        Add to Cart
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Flash Sale Section */}
+          <ProductSection 
+            title="Flash Sale - Limited Time Offers!" 
+            products={flashSaleProducts} 
+            visibleItems={visibleItems} 
+          />
+          
+          {/* Featured Products Section */}
+          <ProductSection 
+            title="Featured Products" 
+            products={featuredProducts} 
+            visibleItems={visibleItems} 
+          />
+          
+          {/* Regular Products Section */}
+          <ProductSection 
+            title="Our Organic Products" 
+            products={regularProducts} 
+            visibleItems={visibleItems} 
+          />
+          
+          {/* Coming Soon Section */}
+          <ProductSection 
+            title="Coming Soon" 
+            products={comingSoonProducts} 
+            visibleItems={visibleItems} 
+          />
           
           <div className="mb-20">
             <div className="flex items-center mb-6">
               <div className="bg-mosaic-green h-1 flex-grow"></div>
-              <h3 className="text-2xl font-serif font-bold text-mosaic-green-dark mx-4">Organic Cashews</h3>
+              <h3 className="text-2xl font-serif font-bold text-mosaic-green-dark mx-4">Our Flagship Harvest</h3>
               <div className="bg-mosaic-green h-1 flex-grow"></div>
             </div>
             
@@ -312,23 +396,6 @@ const Products = () => {
                     <Leaf className="h-5 w-5 text-mosaic-green mr-2" />
                     <span>Sustainably Grown</span>
                   </div>
-                </div>
-                <div className="flex gap-3 mt-6">
-                  <Button
-                    onClick={() => handleViewDetails(1)}
-                    variant="outline"
-                    className="border-mosaic-green text-mosaic-green hover:bg-mosaic-green hover:text-white transition-colors flex items-center gap-2"
-                  >
-                    <Eye size={18} />
-                    View Details
-                  </Button>
-                  <Button
-                    onClick={() => handleAddToCart(products[0])}
-                    className="bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center gap-2"
-                  >
-                    <ShoppingCart size={18} />
-                    Add to Cart
-                  </Button>
                 </div>
               </div>
             </div>
@@ -372,98 +439,6 @@ const Products = () => {
                     <Star className="h-5 w-5 text-mosaic-green mr-2" />
                     <span>Naturally gluten-free</span>
                   </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-12">
-              <h4 className="text-xl font-serif font-semibold text-mosaic-green mb-6">Tiger Nut Product Range</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-mosaic-earth-light rounded-lg p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in">
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden relative group">
-                    <img 
-                      src="https://images.unsplash.com/photo-1614961233913-a5113a4a34ed?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmxvdXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60" 
-                      alt="Tiger Nut Flour" 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
-                        onClick={() => handleViewDetails("2")}
-                      >
-                        <Eye size={18} />
-                      </button>
-                    </div>
-                  </div>
-                  <h5 className="font-serif font-bold text-mosaic-green-dark mb-2">Organic Tiger Nut Flour</h5>
-                  <p className="text-sm mb-4">
-                    Our signature product, perfect for gluten-free baking and adding nutritional value to smoothies and recipes.
-                  </p>
-                  <Button
-                    onClick={() => handleAddToCart(products[1])}
-                    className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
-                  >
-                    <ShoppingCart size={18} />
-                    Add to Cart
-                  </Button>
-                </div>
-                
-                <div className="bg-mosaic-earth-light rounded-lg p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden relative group">
-                    <img 
-                      src="https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGxhbnQlMjBtaWxrfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60" 
-                      alt="Tiger Nut Milk" 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
-                        onClick={() => handleViewDetails(3)}
-                      >
-                        <Eye size={18} />
-                      </button>
-                    </div>
-                  </div>
-                  <h5 className="font-serif font-bold text-mosaic-green-dark mb-2">Tiger Nut Milk <span className="text-mosaic-green text-xs ml-1">(Coming Soon)</span></h5>
-                  <p className="text-sm mb-4">
-                    Creamy plant-based milk alternative rich in nutrients and natural sweetness.
-                  </p>
-                  <Button
-                    onClick={() => handleAddToCart(products[2])}
-                    className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
-                  >
-                    <ShoppingCart size={18} />
-                    Add to Cart
-                  </Button>
-                </div>
-                
-                <div className="bg-mosaic-earth-light rounded-lg p-6 hover:shadow-lg transition-shadow duration-300 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-                  <div className="bg-gray-200 h-48 rounded-lg mb-4 overflow-hidden relative group">
-                    <img 
-                      src="https://images.unsplash.com/photo-1551024506-0bccd828d307?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGljZSUyMGNyZWFtfGVufDB8fDB8fHww&auto=format&fit=crop&w=600&q=60" 
-                      alt="Tiger Nut Desserts" 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        className="bg-white text-mosaic-green-dark p-2 rounded-full mx-1 hover:bg-mosaic-green hover:text-white transition-colors"
-                        onClick={() => handleViewDetails(4)}
-                      >
-                        <Eye size={18} />
-                      </button>
-                    </div>
-                  </div>
-                  <h5 className="font-serif font-bold text-mosaic-green-dark mb-2">Tiger Nut Desserts <span className="text-mosaic-green text-xs ml-1">(Coming Soon)</span></h5>
-                  <p className="text-sm mb-4">
-                    Frozen treats and baked delights featuring the unique flavor and nutrition of tiger nuts.
-                  </p>
-                  <Button
-                    onClick={() => handleAddToCart(products[3])}
-                    className="w-full bg-mosaic-green hover:bg-mosaic-green-dark text-white transition-colors flex items-center justify-center gap-2"
-                  >
-                    <ShoppingCart size={18} />
-                    Add to Cart
-                  </Button>
                 </div>
               </div>
             </div>

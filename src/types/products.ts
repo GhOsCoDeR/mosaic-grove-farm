@@ -34,11 +34,16 @@ export interface Product {
   category_id: string | null;
   inventory_count: number;
   is_featured: boolean | null;
+  is_coming_soon?: boolean | null;
+  is_flash_sale?: boolean | null;
+  flash_sale_end?: string | null;
+  discount_percent?: number | null;
   created_at?: string;
   updated_at?: string;
   
   // Extended properties from related data (not part of the database schema)
   category?: Category | { name: string };
+  category_name?: string;
   weights?: ProductWeight[];
   variations?: ProductVariation[] | { name: string; options: string[] }[];
   weight?: {
@@ -47,7 +52,6 @@ export interface Product {
     options?: number[];
   } | { options: number[]; unit: string };
   image?: string; // Alias for image_url for backward compatibility
-  category_name?: string; // Added for old code using product.category directly
   
   // Backward compatibility with old code
   weight_options?: { options: number[]; unit: string };
